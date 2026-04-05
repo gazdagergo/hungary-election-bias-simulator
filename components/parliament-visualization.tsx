@@ -93,11 +93,11 @@ const translations = {
       },
       mailVoting: {
         name: "Határon túli levélszavazás",
-        description: "A határon túli magyarok levélben szavazhatnak. 2022-ben kb. 268.000 határon túli szavazott, akiknek 93-96%-a a Fideszre voksolt (NVI adatok alapján). A jövőbeli szavazási arányok változhatnak – állítsa be a csúszkát saját becslése szerint. Pozitív érték = Fidesz előny, negatív = Tisza előny."
+        description: "A határon túli magyarok levélben szavazhatnak. 2022-ben ~264.000 érvényes szavazat érkezett, 93-96%-a Fideszre (2 mandátum). A szavazatok 70%-a Erdélyből. Érvénytelen szavazatok: 15%. A múltbeli minták változhatnak – a csúszka mindkét irányba állítható: pozitív érték Fidesz-, negatív érték Tisza-előnyt jelent."
       },
       embassyVoting: {
         name: "Nyugati magyarok korlátozott szavazása",
-        description: "A Magyarországon lakcímmel rendelkező, de külföldön élő magyarok csak nagykövetségeken szavazhatnak. A részvételi arányuk hatszor alacsonyabb - ők jellemzően ellenzékiek."
+        description: "A magyar lakcímmel rendelkező, de külföldön élő magyarok (~400-500 ezer fő) csak nagykövetségen szavazhatnak személyesen. 2022-ben 65.000-en regisztráltak, ~57.000-en szavaztak. Fidesz támogatottság: 11% (nyugati emigránsok) vs 93% (határon túliak). Sokan 500-600 km-t utaznak."
       },
       gerrymandering: {
         name: "Gerrymandering",
@@ -189,11 +189,11 @@ const translations = {
       },
       mailVoting: {
         name: "Cross-border mail voting",
-        description: "Cross-border Hungarians can vote by mail. In 2022, about 268,000 voted, with 93-96% supporting Fidesz (per NVI data). Future voting patterns may change – adjust the slider based on your estimate. Positive = Fidesz advantage, negative = Tisza advantage."
+        description: "Cross-border Hungarians can vote by mail. In 2022: ~264K valid votes, 93-96% for Fidesz (2 seats). 70% from Transylvania. Invalid ballots: 15%. Past patterns may change – the slider works both ways: positive = Fidesz advantage, negative = Tisza advantage."
       },
       embassyVoting: {
         name: "Restricted voting for Western Hungarians",
-        description: "Hungarians with Hungarian addresses but living abroad can only vote at embassies. Their participation rate is six times lower - they tend to be opposition voters."
+        description: "Hungarians with addresses but living abroad (~400-500K people) must vote in person at embassies. In 2022: 65K registered, ~57K voted. Fidesz support: 11% (Western emigrants) vs 93% (cross-border). Many travel 500-600 km to vote."
       },
       gerrymandering: {
         name: "Gerrymandering",
@@ -336,8 +336,18 @@ const voteGatheringFactors: Factor[] = [
     category: "vote-gathering",
     beneficiary: "bidirectional",
     references: [
-      { title: "Ket mandatumot hoztak a Fidesz-KDNP-nek a levelszavazatok", url: "https://maszol.ro/kulfold/Ket-mandatumot-hoztak-a-Fidesz-KDNP-nek-a-levelszavazatok", source: "Maszol.ro" },
-      { title: "2022 választási eredmények - NVI", url: "https://www.valasztas.hu/ogy2022", source: "Nemzeti Választási Iroda" }
+      // International reports
+      { title: "A Tale Of Two Diasporas: Hungarian Voters Abroad", url: "https://www.rferl.org/a/hungary-election-diaspora-orban-marki-zay/31712662.html", source: "RFE/RL" },
+      { title: "Orbán's Election Machine Beyond Hungary's Borders", url: "https://thehungaryreport.com/the-election-machine-beyond-hungarys-borders/", source: "The Hungary Report" },
+      { title: "Diasporas Intertwined: Transborder Hungarians", url: "https://www.populismstudies.org/diasporas-intertwined-the-role-of-transborder-hungarians-in-hungarys-diaspora-engagement/", source: "ECPS" },
+      { title: "Fresh evidence of Hungary vote-rigging", url: "https://www.opendemocracy.net/en/breaking-fresh-evidence-hungary-vote-rigging-raises-concerns-fraud-european-elections/", source: "openDemocracy" },
+      { title: "Will wooing the diaspora tip the election?", url: "https://www.euronews.com/2022/04/01/will-wooing-the-hungarian-diaspora-tip-the-election-in-orban-s-favour", source: "Euronews" },
+      // Hungarian sources
+      { title: "2022 választási eredmények", url: "https://www.valasztas.hu/ogy2022", source: "Nemzeti Választási Iroda" },
+      { title: "Két mandátumot hoztak a levélszavazatok", url: "https://maszol.ro/kulfold/Ket-mandatumot-hoztak-a-Fidesz-KDNP-nek-a-levelszavazatok", source: "Maszol.ro" },
+      { title: "Hány levélszavazatot kaptak a pártok", url: "https://www.portfolio.hu/gazdasag/20220409/kiderult-hany-levelszavazatot-kaptak-a-partok-538609", source: "Portfolio.hu" },
+      { title: "Külhoni állampolgárok nélkül is meglenne a kétharmad", url: "https://pcblog.atlatszo.hu/2022/04/11/kulhoni-magyar-allampolgarok-nelkul-is-meglenne-a-ketharmad-a-gyoztes-tuljutalmazasa-nelkul-nem/", source: "Átlátszó PC Blog" },
+      { title: "Erdélyi határon túliak szavazata", url: "https://transtelex.ro/kozelet/2022/04/01/erdely-hataron-tuliak-szavazata-levelszavazat", source: "Transtelex" },
     ]
   },
   {
@@ -350,7 +360,16 @@ const voteGatheringFactors: Factor[] = [
     category: "vote-gathering",
     beneficiary: "fidesz",
     references: [
-      { title: "Different registration and voting procedures", url: "https://www.osce.org/odihr/elections/523565", source: "OSCE/ODIHR" }
+      // International reports
+      { title: "OSCE/ODIHR Final Report 2022 - Out-of-country voting", url: "https://www.osce.org/odihr/elections/523565", source: "OSCE" },
+      { title: "A Tale Of Two Diasporas - Western vs Eastern", url: "https://www.rferl.org/a/hungary-election-diaspora-orban-marki-zay/31712662.html", source: "RFE/RL" },
+      { title: "How Viktor Orbán Wins", url: "https://www.journalofdemocracy.org/articles/how-viktor-orban-wins/", source: "Journal of Democracy" },
+      { title: "Record overseas voting could boost Tisza Party", url: "https://dailynewshungary.com/record-transfer-voting-boost-tisza-party/", source: "Daily News Hungary" },
+      // Hungarian sources
+      { title: "Több százezer külföldön élőből 65 ezren jutnak el az urnákig", url: "https://telex.hu/valasztas-2022/2022/03/30/valasztas-kulfoldon-elok-65-ezer-valasztasi-torveny", source: "Telex" },
+      { title: "Rekordszámú szavazó várható a külképviseleteken", url: "https://telex.hu/belfold/2026/03/06/kulkepviseleti-szavazas-kulfoldi-magyarok-rekordszamban-tisza-kormanyvaltas", source: "Telex" },
+      { title: "Szavazás külföldről – TASZ útmutató", url: "https://tasz.hu/tudastar/szavazas-kulfoldrol/", source: "TASZ" },
+      { title: "Külföldről szavazó magyarok száma", url: "https://hu.euronews.com/2022/03/28/valasztasrol-valasztasra-jelentosen-no-a-kulfoldrol-szavazo-magyarok-szama", source: "Euronews HU" },
     ]
   },
 ]
