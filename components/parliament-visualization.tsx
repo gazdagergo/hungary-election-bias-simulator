@@ -368,38 +368,51 @@ function ParliamentChart({ seats }: { seats: PartySeats }) {
     setMounted(true)
   }, [])
 
-  const seatData = useMemo(() => {
-    const result: { party: string; color: string }[] = []
-    for (let i = 0; i < seats.tisza; i++) result.push({ party: "tisza", color: PARTY_COLORS.tisza })
-    for (let i = 0; i < seats.fidesz; i++) result.push({ party: "fidesz", color: PARTY_COLORS.fidesz })
-    for (let i = 0; i < seats.mihazank; i++) result.push({ party: "mihazank", color: PARTY_COLORS.mihazank })
-    for (let i = result.length; i < TOTAL_SEATS; i++) result.push({ party: "other", color: PARTY_COLORS.other })
-    return result
-  }, [seats.tisza, seats.fidesz, seats.mihazank])
-
-  const rows = [
-    { count: 25, radius: 100 },
-    { count: 30, radius: 130 },
-    { count: 35, radius: 160 },
-    { count: 38, radius: 190 },
-    { count: 40, radius: 220 },
-    { count: 31, radius: 250 },
-  ]
-
+  // Generate seat positions with even spacing across all rows
+  // Using constant arc-length per seat for even distribution
   const seatPositions = useMemo(() => {
-    const positions: { x: number; y: number; idx: number }[] = []
-    let seatIdx = 0
-    for (const row of rows) {
-      for (let i = 0; i < row.count && seatIdx < TOTAL_SEATS; i++) {
-        const angle = Math.PI - (Math.PI * (i + 0.5)) / row.count
-        const x = 250 + row.radius * Math.cos(angle)
-        const y = 260 - row.radius * Math.sin(angle)
-        positions.push({ x, y, idx: seatIdx })
-        seatIdx++
+    const centerX = 280
+    const centerY = 270
+    const innerRadius = 80
+    const outerRadius = 240
+    const numRows = 7
+    const dotRadius = 7
+    const dotSpacing = dotRadius * 2.2 // Space between dot centers
+
+    // Calculate total seats we can fit with even spacing
+    const positions: { x: number; y: number; angle: number }[] = []
+
+    for (let row = 0; row < numRows; row++) {
+      const radius = innerRadius + (outerRadius - innerRadius) * (row / (numRows - 1))
+      // Calculate how many dots fit in this semicircle with even spacing
+      const arcLength = Math.PI * radius
+      const seatsInRow = Math.floor(arcLength / dotSpacing)
+
+      for (let i = 0; i < seatsInRow; i++) {
+        // Distribute evenly across the semicircle (π to 0)
+        const angle = Math.PI - (Math.PI * (i + 0.5)) / seatsInRow
+        const x = centerX + radius * Math.cos(angle)
+        const y = centerY - radius * Math.sin(angle)
+        positions.push({ x, y, angle })
       }
     }
-    return positions
+
+    // Take only the 199 seats we need, sorted by angle for radial coloring
+    // Sort by angle (left to right = π to 0), which means descending order
+    positions.sort((a, b) => b.angle - a.angle)
+
+    return positions.slice(0, TOTAL_SEATS)
   }, [])
+
+  // Assign colors based on sorted (radial) order
+  const seatColors = useMemo(() => {
+    const colors: string[] = []
+    for (let i = 0; i < seats.tisza; i++) colors.push(PARTY_COLORS.tisza)
+    for (let i = 0; i < seats.fidesz; i++) colors.push(PARTY_COLORS.fidesz)
+    for (let i = 0; i < seats.mihazank; i++) colors.push(PARTY_COLORS.mihazank)
+    while (colors.length < TOTAL_SEATS) colors.push(PARTY_COLORS.other)
+    return colors
+  }, [seats.tisza, seats.fidesz, seats.mihazank])
 
   if (!mounted) {
     return <div className="w-full h-[280px]" />
@@ -407,14 +420,14 @@ function ParliamentChart({ seats }: { seats: PartySeats }) {
 
   return (
     <div className="w-full flex justify-center">
-      <svg viewBox="0 0 500 280" className="w-full max-w-lg" suppressHydrationWarning>
+      <svg viewBox="0 0 560 280" className="w-full max-w-lg" suppressHydrationWarning>
         {seatPositions.map((pos, i) => (
           <motion.circle
             key={i}
             cx={pos.x}
             cy={pos.y}
             r={7}
-            fill={seatData[pos.idx]?.color || PARTY_COLORS.other}
+            fill={seatColors[i] || PARTY_COLORS.other}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: i * 0.002, duration: 0.3 }}
