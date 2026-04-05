@@ -117,11 +117,11 @@ const translations = {
       },
       parliamentSize: {
         name: "Parlament létszámának csökkentése",
-        description: "386-ról 199-re csökkentették a létszámot. Ez növelte a többségi elemek súlyát, és a győztest segíti."
+        description: "386-ról 199-re csökkentették a létszámot. A többségi elem aránya 46%-ról 53%-ra nőtt (106/199). Kevesebb mandátum = nagyobb torzítás a győztes javára. A mindenkori győztest segíti – ha a Tisza nyer, nekik is kedvez."
       },
       electoralWeighting: {
         name: "Választási rendszer súlyozása (1989 óta)",
-        description: "A magyar vegyes rendszer eredendően a győztest segíti - ez nem Fidesz-találmány. A többségi elem (106 egyéni körzet) természeténél fogva torzít."
+        description: "A magyar vegyes rendszer eredendően a győztest segíti – ez nem Fidesz-találmány, 1989 óta létezik. A többségi elem (106 egyéni körzet) természeténél fogva torzít: 2022-ben 53% szavazat = 68% mandátum. A mindenkori győztest segíti."
       }
     }
   },
@@ -213,11 +213,11 @@ const translations = {
       },
       parliamentSize: {
         name: "Reduction of parliament size",
-        description: "Reduced from 386 to 199 seats. This increased the weight of majoritarian elements and helps the winner."
+        description: "Reduced from 386 to 199 seats. Majoritarian element rose from 46% to 53% (106/199). Fewer seats = greater winner distortion. This helps whoever wins – if Tisza wins, it benefits them too."
       },
       electoralWeighting: {
         name: "Electoral system weighting (since 1989)",
-        description: "The Hungarian mixed system inherently helps the winner - this is not a Fidesz invention. The majoritarian element (106 individual districts) naturally distorts."
+        description: "The Hungarian mixed system inherently helps the winner – not a Fidesz invention, exists since 1989. The majoritarian element (106 districts) naturally distorts: in 2022, 53% votes = 68% seats. Helps whoever wins."
       }
     }
   }
@@ -472,7 +472,9 @@ const seatConversionFactors: Factor[] = [
     category: "seat-conversion",
     beneficiary: "winner",
     references: [
-      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer" }
+      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" },
+      { title: "Electoral system of Hungary - Parliament size", url: "https://en.wikipedia.org/wiki/Electoral_system_of_Hungary", source: "Wikipedia" },
+      { title: "Hungary's Electoral System - IOG", url: "https://instituteofgeoeconomics.org/en/research/hungarys-electoral-system-constructing-a-system-favorable-to-the-governing-party-and-its-future-prospects/", source: "Institute of Geoeconomics" },
     ]
   },
   {
@@ -485,7 +487,9 @@ const seatConversionFactors: Factor[] = [
     category: "seat-conversion",
     beneficiary: "winner",
     references: [
-      { title: "The 'hacking' of a mixed electoral system - Historical context", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer" }
+      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" },
+      { title: "Electoral system of Hungary - Historical", url: "https://en.wikipedia.org/wiki/Electoral_system_of_Hungary", source: "Wikipedia" },
+      { title: "On the Way to Limited Competitiveness", url: "https://onlinelibrary.wiley.com/doi/full/10.1111/spsr.12535", source: "Swiss Political Science Review (2023)" },
     ]
   },
 ]
