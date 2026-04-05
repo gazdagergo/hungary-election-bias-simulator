@@ -101,7 +101,7 @@ const translations = {
       },
       gerrymandering: {
         name: "Gerrymandering",
-        description: "A 2011-es választási törvény újrarajzolta a választókerületek határait. A Fidesz-szavazók többsége kisebb lakosságú körzetekben van, míg az ellenzéki körzetek nagyobbak."
+        description: "A 2011-es törvény 176-ról 106-ra csökkentette a körzeteket, átláthatatlan módon átrajzolva a határokat. A Fidesz szavazatai 3-4%-kal többet érnek az egyenlőtlenségek miatt. A 2002-es és 2006-os választás is Fidesz-győzelem lett volna az új térképpel. 2022-re a körzetek megsértették a törvényes 20%-os eltérési szabályt."
       },
       twoRound: {
         name: "Kétfordulós szavazás eltörlése",
@@ -113,7 +113,7 @@ const translations = {
       },
       winnerCompensation: {
         name: "Győzteskompenzáció",
-        description: "A győztes egyéni jelöltek többletszavazatai is átkerülnek a pártlistára. Ez a mindenkori győztest segíti - ha a Tisza nyer, nekik kedvez!"
+        description: "A győztes egyéni jelöltek többletszavazatai átkerülnek a pártlistára – világviszonylatban egyedülálló szabály. 2022-ben ~5 extra mandátumot hozott a Fidesznek. E nélkül sem 2014-ben, sem 2018-ban nem lett volna kétharmad. A mindenkori győztest segíti – ha a Tisza nyer, nekik kedvez!"
       },
       parliamentSize: {
         name: "Parlament létszámának csökkentése",
@@ -197,7 +197,7 @@ const translations = {
       },
       gerrymandering: {
         name: "Gerrymandering",
-        description: "The 2011 electoral law redrew constituency boundaries. Fidesz voters are concentrated in smaller population districts, while opposition districts are larger."
+        description: "The 2011 law reduced constituencies from 176 to 106, redrawing boundaries non-transparently. Fidesz votes worth 3-4% more due to inequalities. The 2002 and 2006 elections would have been Fidesz wins with the new map. By 2022, districts violated the legal 20% deviation rule."
       },
       twoRound: {
         name: "Abolition of two-round voting",
@@ -209,7 +209,7 @@ const translations = {
       },
       winnerCompensation: {
         name: "Winner compensation",
-        description: "Surplus votes from winning individual candidates are transferred to the party list. This helps whoever wins - if Tisza wins, it benefits them!"
+        description: "Surplus votes from winning candidates transfer to the party list – a globally unique rule. In 2022, it gave Fidesz ~5 extra seats. Without it, no 2/3 majority in 2014 or 2018. This helps whoever wins – if Tisza wins, it benefits them!"
       },
       parliamentSize: {
         name: "Reduction of parliament size",
@@ -386,8 +386,18 @@ const seatConversionFactors: Factor[] = [
     category: "seat-conversion",
     beneficiary: "fidesz",
     references: [
-      { title: "Tuljutalmazott gyoztes", url: "https://poltudszemle.hu/articles/tuljutalmazott-gyoztes/", source: "Politikatudomanyi Szemle (2024)" },
-      { title: "Hungary 2022: Manipulated Elections", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" }
+      // Academic research
+      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" },
+      { title: "Geography of the new electoral system Hungary", url: "https://www.researchgate.net/publication/280941629_Geography_of_the_new_electoral_system_and_changing_voting_patterns_in_Hungary", source: "ResearchGate" },
+      // International reports
+      { title: "Hungary 2022: Manipulated Elections", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
+      { title: "Hungary's Electoral System: Reforms, Gerrymandering", url: "https://en.unav.edu/en/web/global-affairs/hungary-s-electoral-system-reforms-gerrymandering-and-strategic-voting-in-2026", source: "University of Navarra" },
+      // Hungarian sources
+      { title: "A választókerületek egyenlőtlensége", url: "https://www.partizan.hu/post/hogyan-seg%C3%ADti-a-v%C3%A1laszt%C3%A1si-rendszer-a-fideszt-1-r%C3%A9sz", source: "Partizán" },
+      { title: "A Fidesz tíz legnagyobb térképrajzolós bravúrja", url: "https://444.hu/2014/03/10/a-tiz-legelszabottabb-valasztokerulet", source: "444.hu" },
+      { title: "A választókerületek átrajzolása a kormánypártoknak kedvezhet", url: "https://www.szabadeuropa.hu/a/a-valasztokeruletek-atrajzolasa-is-a-kormanypartoknak-kedvezhet/31708449.html", source: "Szabad Európa" },
+      { title: "Gerrymandering Fidesz-módra", url: "https://magyarnarancs.hu/belpol/bekeritik-a-varost-272776", source: "Magyar Narancs" },
+      { title: "Túljutalmazott győztes", url: "https://poltudszemle.hu/articles/tuljutalmazott-gyoztes/", source: "Politikatudományi Szemle (2024)" },
     ]
   },
   {
@@ -426,8 +436,16 @@ const seatConversionFactors: Factor[] = [
     category: "seat-conversion",
     beneficiary: "winner",
     references: [
-      { title: "Tuljutalmazott gyoztes", url: "https://poltudszemle.hu/articles/tuljutalmazott-gyoztes/", source: "Politikatudomanyi Szemle" },
-      { title: "Mi az a gyozteskompenzacio?", url: "https://www.szavaz.at/rendszerek/vegyes/gyozteskompenzacio", source: "szavaz.at" }
+      // Academic research
+      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" },
+      { title: "Győzteskompenzáció hatása - CUB szakdolgozat", url: "https://szd.lib.uni-corvinus.hu/15460/", source: "Corvinus University (2022)" },
+      // International reports
+      { title: "Hungary's Electoral System - IOG Analysis", url: "https://instituteofgeoeconomics.org/en/research/hungarys-electoral-system-constructing-a-system-favorable-to-the-governing-party-and-its-future-prospects/", source: "Institute of Geoeconomics" },
+      { title: "Elections in Hungary - Electoral Integrity Project", url: "https://www.electoralintegrityproject.com/eip-blog/2023/2/23/elections-in-hungary-free-and-fair-is-much-more-than-election-day", source: "Electoral Integrity Project" },
+      // Hungarian sources
+      { title: "Túljutalmazott győztes", url: "https://poltudszemle.hu/articles/tuljutalmazott-gyoztes/", source: "Politikatudományi Szemle (2024)" },
+      { title: "Mi az a győzteskompenzáció?", url: "https://www.szavaz.at/rendszerek/vegyes/gyozteskompenzacio", source: "szavaz.at" },
+      { title: "Külhoni állampolgárok és győzteskompenzáció elemzés", url: "https://pcblog.atlatszo.hu/2022/04/11/kulhoni-magyar-allampolgarok-nelkul-is-meglenne-a-ketharmad-a-gyoztes-tuljutalmazasa-nelkul-nem/", source: "Átlátszó PC Blog" },
     ]
   },
   {
