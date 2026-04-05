@@ -38,16 +38,21 @@ const translations = {
     twoThirds: "2/3",
     transformationFlow: "Az átalakulás menete",
     fairPreference: "Valós preferencia",
-    measuredVotes: "Mért szavazat",
+    measuredPreference: "Mért preferencia",
+    measuredPreferenceTooltip: "A közvéleménykutatási adatokat a leadott szavazatokkal azonosnak tekintjük. A preferencia és a tényleges szavazás közötti eltérést (részvételi különbségek, rejtett szavazók, utolsó pillanatban változtatók) nem modellezzük megbízható adatok hiányában.",
     finalSeats: "Végső mandátum",
-    voteGatheringBiases: "Szavazatszerzési torzítások",
+    opinionFormingBiases: "Véleményformáló torzítások",
+    voteGatheringBiases: "Külföldi szavazatok",
     seatConversionBiases: "Mandátumszámítási",
-    voteGatheringDesc: "propaganda, szavazatvásárlás",
+    opinionFormingDesc: "propaganda, szavazatvásárlás",
+    voteGatheringDesc: "levélszavazás, nagykövetségi",
     seatConversionDesc: "gerrymandering, győzteskompenzáció",
     voterPreference: "Valós szavazói preferencia",
-    voterPreferenceTooltip: "Ez az elméleti szavazati arány, ha nem lenne állami propaganda és egyéb szavazatszerzési torzítás. A közvéleménykutatások már tartalmazzák ezeket a hatásokat!",
-    voteGatheringFactorsTitle: "Szavazatszerzési torzítások",
-    voteGatheringFactorsDesc: "Ezek a tényezők a szavazatok számát befolyásolják – a közvéleménykutatások már tartalmazzák őket.",
+    voterPreferenceTooltip: "Ez az elméleti szavazati arány, ha nem lenne állami propaganda és egyéb véleményformáló torzítás. A közvéleménykutatások már tartalmazzák ezeket a hatásokat!",
+    opinionFormingFactorsTitle: "Véleményformáló torzítások",
+    opinionFormingFactorsDesc: "Ezek a tényezők a hazai szavazók véleményét befolyásolják – a közvéleménykutatások már tartalmazzák őket.",
+    voteGatheringFactorsTitle: "Külföldi szavazatok",
+    voteGatheringFactorsDesc: "Ezek a szavazatok nem szerepelnek a belföldi közvéleménykutatásokban.",
     seatConversionFactorsTitle: "Mandátumszámítási torzítások",
     seatConversionFactorsDesc: "Ezek a tényezők azt befolyásolják, hogyan alakulnak a szavazatok mandátumokká.",
     references: "Források és hivatkozások",
@@ -88,7 +93,7 @@ const translations = {
       },
       mailVoting: {
         name: "Határon túli levélszavazás",
-        description: "A határon túli magyarok 95-96%-a a Fideszre szavaz. 2022-ben kb. 268.000 határon túli szavazott. Ez extra szavazatokat jelent a Fidesznek, akik nem az országban élnek."
+        description: "A határon túli magyarok levélben szavazhatnak. 2022-ben kb. 268.000 határon túli szavazott, akiknek 93-96%-a a Fideszre voksolt (NVI adatok alapján). A jövőbeli szavazási arányok változhatnak – állítsa be a csúszkát saját becslése szerint. Pozitív érték = Fidesz előny, negatív = Tisza előny."
       },
       embassyVoting: {
         name: "Nyugati magyarok korlátozott szavazása",
@@ -129,16 +134,21 @@ const translations = {
     twoThirds: "2/3",
     transformationFlow: "Transformation flow",
     fairPreference: "Fair preference",
-    measuredVotes: "Measured votes",
+    measuredPreference: "Measured preference",
+    measuredPreferenceTooltip: "We treat poll data as equivalent to votes cast. The gap between stated preference and actual voting behavior (turnout differences, shy voters, last-minute changes) is not modeled due to lack of reliable data.",
     finalSeats: "Final seats",
-    voteGatheringBiases: "Vote-gathering biases",
+    opinionFormingBiases: "Opinion-forming biases",
+    voteGatheringBiases: "Foreign votes",
     seatConversionBiases: "Seat-conversion",
-    voteGatheringDesc: "propaganda, vote buying",
+    opinionFormingDesc: "propaganda, vote buying",
+    voteGatheringDesc: "mail voting, embassy",
     seatConversionDesc: "gerrymandering, winner compensation",
     voterPreference: "Fair voter preference",
-    voterPreferenceTooltip: "This is the theoretical vote share without state propaganda and other vote-gathering biases. Polls already include these effects!",
-    voteGatheringFactorsTitle: "Vote-gathering biases",
-    voteGatheringFactorsDesc: "These factors affect the number of votes – polls already include them.",
+    voterPreferenceTooltip: "This is the theoretical vote share without state propaganda and other opinion-forming biases. Polls already include these effects!",
+    opinionFormingFactorsTitle: "Opinion-forming biases",
+    opinionFormingFactorsDesc: "These factors influence domestic voter opinions – polls already include them.",
+    voteGatheringFactorsTitle: "Foreign votes",
+    voteGatheringFactorsDesc: "These votes are not included in domestic polls.",
     seatConversionFactorsTitle: "Seat-conversion biases",
     seatConversionFactorsDesc: "These factors affect how votes are converted to seats.",
     references: "Sources and references",
@@ -179,7 +189,7 @@ const translations = {
       },
       mailVoting: {
         name: "Cross-border mail voting",
-        description: "95-96% of Hungarians abroad vote for Fidesz. In 2022, about 268,000 cross-border Hungarians voted. This means extra votes for Fidesz from people who don't live in the country."
+        description: "Cross-border Hungarians can vote by mail. In 2022, about 268,000 voted, with 93-96% supporting Fidesz (per NVI data). Future voting patterns may change – adjust the slider based on your estimate. Positive = Fidesz advantage, negative = Tisza advantage."
       },
       embassyVoting: {
         name: "Restricted voting for Western Hungarians",
@@ -224,8 +234,8 @@ const PARTY_COLORS = {
 const TOTAL_SEATS = 199
 
 // Factor categories
-type FactorCategory = "vote-gathering" | "seat-conversion"
-type Beneficiary = "fidesz" | "winner"
+type FactorCategory = "opinion-forming" | "vote-gathering" | "seat-conversion"
+type Beneficiary = "fidesz" | "winner" | "bidirectional"
 
 interface Factor {
   id: string
@@ -258,8 +268,8 @@ const DEFAULT_MEASURED_VOTES: VoteShare = {
   smallParty: 5,
 }
 
-// Vote-gathering biases
-const voteGatheringFactors: Factor[] = [
+// Opinion-forming biases (affect domestic voter sentiment, reflected in polls)
+const opinionFormingFactors: Factor[] = [
   {
     id: "propaganda",
     nameKey: "propaganda",
@@ -267,7 +277,7 @@ const voteGatheringFactors: Factor[] = [
     value: 5,
     maxValue: 12,
     minValue: 2,
-    category: "vote-gathering",
+    category: "opinion-forming",
     beneficiary: "fidesz",
     references: [
       { title: "Hungary 2022: Manipulated Elections", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
@@ -281,23 +291,28 @@ const voteGatheringFactors: Factor[] = [
     value: 3,
     maxValue: 8,
     minValue: 1,
-    category: "vote-gathering",
+    category: "opinion-forming",
     beneficiary: "fidesz",
     references: [
       { title: "Blackmailing of financially vulnerable voters", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" }
     ]
   },
+]
+
+// Vote-gathering biases (additional votes not captured in domestic polls)
+const voteGatheringFactors: Factor[] = [
   {
     id: "mail-voting",
     nameKey: "mailVoting",
     enabled: true,
     value: 2,
     maxValue: 5,
-    minValue: 1,
+    minValue: -5,
     category: "vote-gathering",
-    beneficiary: "fidesz",
+    beneficiary: "bidirectional",
     references: [
-      { title: "Ket mandatumot hoztak a Fidesz-KDNP-nek a levelszavazatok", url: "https://maszol.ro/kulfold/Ket-mandatumot-hoztak-a-Fidesz-KDNP-nek-a-levelszavazatok", source: "Maszol.ro" }
+      { title: "Ket mandatumot hoztak a Fidesz-KDNP-nek a levelszavazatok", url: "https://maszol.ro/kulfold/Ket-mandatumot-hoztak-a-Fidesz-KDNP-nek-a-levelszavazatok", source: "Maszol.ro" },
+      { title: "2022 választási eredmények - NVI", url: "https://www.valasztas.hu/ogy2022", source: "Nemzeti Választási Iroda" }
     ]
   },
   {
@@ -567,6 +582,7 @@ function FlowDiagram({
     {
       icon: Monitor,
       label: t.fairPreference,
+      tooltip: null,
       tisza: `${Math.round(fairVotes.tisza)}%`,
       fidesz: `${Math.round(fairVotes.fidesz)}%`,
       smallParty: `${Math.round(fairVotes.smallParty)}%`,
@@ -578,7 +594,8 @@ function FlowDiagram({
     },
     {
       icon: Vote,
-      label: hasDisabledVoteBias ? t.measuredVotes + " *" : t.measuredVotes,
+      label: hasDisabledVoteBias ? t.measuredPreference + " *" : t.measuredPreference,
+      tooltip: t.measuredPreferenceTooltip,
       tisza: `${Math.round(effectiveVotes.tisza)}%`,
       fidesz: `${Math.round(effectiveVotes.fidesz)}%`,
       smallParty: `${Math.round(effectiveVotes.smallParty)}%`,
@@ -591,6 +608,7 @@ function FlowDiagram({
     {
       icon: Landmark,
       label: t.finalSeats,
+      tooltip: null,
       tisza: `${seats.tisza}`,
       fidesz: `${seats.fidesz}`,
       smallParty: `${seats.smallParty}`,
@@ -603,8 +621,8 @@ function FlowDiagram({
   ]
 
   const arrows = [
-    `${t.voteGatheringBiases} (${t.voteGatheringDesc})`,
-    `${t.seatConversionBiases} (${t.seatConversionDesc})`,
+    `${t.opinionFormingBiases} (${t.opinionFormingDesc})`,
+    `${t.voteGatheringBiases} + ${t.seatConversionBiases} (${t.voteGatheringDesc}, ${t.seatConversionDesc})`,
   ]
 
   return (
@@ -623,6 +641,18 @@ function FlowDiagram({
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
               <step.icon className="w-4 h-4" />
               <span className="font-medium">{step.label}</span>
+              {step.tooltip && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">{step.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -747,10 +777,15 @@ function BiasControls({
       {factors.map((factor, i) => {
         const factorT = t.factors[factor.nameKey as keyof typeof t.factors]
         const isWinnerFactor = factor.beneficiary === "winner"
-        const actualBeneficiary = isWinnerFactor ? winner : "fidesz"
+        const isBidirectional = factor.beneficiary === "bidirectional"
+        // For bidirectional: positive = Fidesz, negative = Tisza
+        const actualBeneficiary = isBidirectional
+          ? (factor.value >= 0 ? "fidesz" : "tisza")
+          : (isWinnerFactor ? winner : "fidesz")
         const beneficiaryColor = actualBeneficiary === "tisza" ? PARTY_COLORS.tisza : PARTY_COLORS.fidesz
         const beneficiaryName = actualBeneficiary === "tisza" ? "Tisza" : "Fidesz"
         const unit = factor.category === "vote-gathering" ? "%" : ` ${t.seats}`
+        const displayValue = isBidirectional ? Math.abs(factor.value) : factor.value
 
         return (
           <motion.div
@@ -807,7 +842,7 @@ function BiasControls({
                 </div>
               </div>
               <span className="text-xs font-semibold" style={{ color: beneficiaryColor }}>
-                +{factor.value}{unit} {beneficiaryName}
+                +{displayValue}{unit} {beneficiaryName}
               </span>
             </div>
             {factor.enabled && factor.maxValue !== factor.minValue && (
@@ -843,9 +878,12 @@ function TourPanel({
   measuredVotes,
   fairVotes,
   onPollChange,
+  opinionFactors,
   voteFactors,
   seatFactors,
   winner,
+  onOpinionFactorToggle,
+  onOpinionFactorChange,
   onVoteFactorToggle,
   onVoteFactorChange,
   onSeatFactorToggle,
@@ -862,9 +900,12 @@ function TourPanel({
   measuredVotes: VoteShare
   fairVotes: VoteShare
   onPollChange: (party: keyof VoteShare, value: number) => void
+  opinionFactors: Factor[]
   voteFactors: Factor[]
   seatFactors: Factor[]
   winner: "tisza" | "fidesz"
+  onOpinionFactorToggle: (id: string) => void
+  onOpinionFactorChange: (id: string, value: number) => void
   onVoteFactorToggle: (id: string) => void
   onVoteFactorChange: (id: string, value: number) => void
   onSeatFactorToggle: (id: string) => void
@@ -874,10 +915,11 @@ function TourPanel({
   const isFirstPage = currentPage === 0
 
   // Calculate which bias we're showing (if any)
-  // Page 0: Intro, Page 1: Polls, Pages 2+: Biases
-  const allFactors = [...voteFactors, ...seatFactors]
+  // Page 0: Intro, Page 1: Polls, Pages 2+: Biases (opinion + vote + seat)
+  const allFactors = [...opinionFactors, ...voteFactors, ...seatFactors]
   const biasIndex = currentPage - 2
   const currentFactor = biasIndex >= 0 ? allFactors[biasIndex] : null
+  const isOpinionFactor = currentFactor ? opinionFactors.some(f => f.id === currentFactor.id) : false
   const isVoteFactor = currentFactor ? voteFactors.some(f => f.id === currentFactor.id) : false
 
   const renderContent = () => {
@@ -974,13 +1016,22 @@ function TourPanel({
     if (currentFactor) {
       const factorT = t.factors[currentFactor.nameKey as keyof typeof t.factors]
       const isWinnerFactor = currentFactor.beneficiary === "winner"
-      const actualBeneficiary = isWinnerFactor ? winner : "fidesz"
+      const isBidirectional = currentFactor.beneficiary === "bidirectional"
+      // For bidirectional: positive = Fidesz, negative = Tisza
+      const actualBeneficiary = isBidirectional
+        ? (currentFactor.value >= 0 ? "fidesz" : "tisza")
+        : (isWinnerFactor ? winner : "fidesz")
       const beneficiaryColor = actualBeneficiary === "tisza" ? PARTY_COLORS.tisza : PARTY_COLORS.fidesz
       const beneficiaryName = actualBeneficiary === "tisza" ? "Tisza" : "Fidesz"
-      const unit = currentFactor.category === "vote-gathering" ? "%" : ` ${t.seats}`
+      const unit = currentFactor.category === "seat-conversion" ? ` ${t.seats}` : "%"
+      const displayValue = isBidirectional ? Math.abs(currentFactor.value) : currentFactor.value
 
-      const handleToggle = isVoteFactor ? onVoteFactorToggle : onSeatFactorToggle
-      const handleChange = isVoteFactor ? onVoteFactorChange : onSeatFactorChange
+      const handleToggle = isOpinionFactor
+        ? onOpinionFactorToggle
+        : (isVoteFactor ? onVoteFactorToggle : onSeatFactorToggle)
+      const handleChange = isOpinionFactor
+        ? onOpinionFactorChange
+        : (isVoteFactor ? onVoteFactorChange : onSeatFactorChange)
 
       return (
         <div className="space-y-6">
@@ -995,7 +1046,9 @@ function TourPanel({
               )}
             </div>
             <Badge variant="secondary" className="text-xs">
-              {currentFactor.category === "vote-gathering" ? t.voteGatheringBiases : t.seatConversionBiases}
+              {currentFactor.category === "opinion-forming"
+                ? t.opinionFormingBiases
+                : (currentFactor.category === "vote-gathering" ? t.voteGatheringBiases : t.seatConversionBiases)}
             </Badge>
           </div>
 
@@ -1024,7 +1077,7 @@ function TourPanel({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{lang === "hu" ? "Hatás mértéke" : "Effect magnitude"}</span>
                   <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
-                    +{currentFactor.value}{unit} {beneficiaryName}
+                    +{displayValue}{unit} {beneficiaryName}
                   </span>
                 </div>
                 <Slider
@@ -1043,7 +1096,7 @@ function TourPanel({
               <div className={`text-sm ${!currentFactor.enabled ? "opacity-40" : ""}`}>
                 <span className="text-muted-foreground">{lang === "hu" ? "Fix hatás:" : "Fixed effect:"} </span>
                 <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
-                  +{currentFactor.value}{unit} {beneficiaryName}
+                  +{displayValue}{unit} {beneficiaryName}
                 </span>
               </div>
             )}
@@ -1173,6 +1226,7 @@ function TourPanel({
 export function ParliamentVisualization() {
   const [lang, setLang] = useState<Language>("hu")
   const [measuredVotes, setMeasuredVotes] = useState<VoteShare>(DEFAULT_MEASURED_VOTES)
+  const [opinionFactors, setOpinionFactors] = useState<Factor[]>(opinionFormingFactors)
   const [voteFactors, setVoteFactors] = useState<Factor[]>(voteGatheringFactors)
   const [seatFactors, setSeatFactors] = useState<Factor[]>(seatConversionFactors)
   const [showReferences, setShowReferences] = useState(false)
@@ -1181,56 +1235,78 @@ export function ParliamentVisualization() {
   const [isTourMode, setIsTourMode] = useState(true)
   const [tourPage, setTourPage] = useState(0)
 
-  // Total tour pages: intro + polls + all biases
-  const totalTourPages = 2 + voteFactors.length + seatFactors.length
+  // Total tour pages: intro + polls + all biases (opinion + vote + seat)
+  const totalTourPages = 2 + opinionFactors.length + voteFactors.length + seatFactors.length
 
   const t = translations[lang]
 
-  // Calculate FAIR votes (theoretical: what votes would be with ALL biases removed)
-  // This is for display in the flow diagram
+  // Calculate FAIR votes (theoretical domestic preference without opinion manipulation)
+  // Only removes opinion-forming biases, NOT foreign votes (which are separate from polls)
   const fairVotes = useMemo((): VoteShare => {
-    // Sum ALL vote-gathering biases (regardless of enabled state)
-    let totalBias = 0
-    voteFactors.forEach(f => {
-      totalBias += f.value
+    // Sum ALL opinion-forming biases (propaganda, vote buying)
+    let fideszBias = 0
+    opinionFactors.forEach(f => {
+      fideszBias += f.value
     })
 
-    if (totalBias === 0) return measuredVotes
+    if (fideszBias === 0) return measuredVotes
 
-    const fairFidesz = Math.max(0, measuredVotes.fidesz - totalBias)
-    const redistributed = measuredVotes.fidesz - fairFidesz
     const otherTotal = measuredVotes.tisza + measuredVotes.smallParty
+    const fairFidesz = Math.max(0, measuredVotes.fidesz - fideszBias)
+    const redistributed = measuredVotes.fidesz - fairFidesz
 
     return {
       tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
       fidesz: fairFidesz,
-      smallParty: otherTotal > 0 ? measuredVotes.smallParty + (redistributed * measuredVotes.smallParty / otherTotal) : measuredVotes.smallParty,
+      smallParty: measuredVotes.smallParty,
     }
-  }, [measuredVotes, voteFactors])
+  }, [measuredVotes, opinionFactors])
 
   // Calculate EFFECTIVE votes for seat calculation
-  // When biases are ON: we acknowledge they exist, use measured votes (polls as-is)
-  // When biases are OFF: we remove that bias effect, showing theoretical fair scenario
+  // Opinion-forming: polls include these → remove when DISABLED to show fair scenario
+  // Foreign votes: NOT in polls → ADD when ENABLED (slider value matters immediately)
+  // Bidirectional biases: positive = Fidesz advantage, negative = Tisza advantage
   const effectiveVotes = useMemo((): VoteShare => {
-    // Calculate how much bias is currently DISABLED (removed from the equation)
-    let removedBias = 0
-    voteFactors.filter(f => !f.enabled).forEach(f => {
-      removedBias += f.value
+    let adjustedFidesz = measuredVotes.fidesz
+    let adjustedTisza = measuredVotes.tisza
+
+    // 1. Process opinion-forming factors (remove bias when DISABLED)
+    let fideszOpinionBiasRemoved = 0
+    opinionFactors.filter(f => !f.enabled).forEach(f => {
+      fideszOpinionBiasRemoved += f.value
     })
 
-    if (removedBias === 0) return measuredVotes // All biases acknowledged, use polls as-is
+    if (fideszOpinionBiasRemoved > 0) {
+      const otherTotal = adjustedTisza + measuredVotes.smallParty
+      const newFidesz = Math.max(0, adjustedFidesz - fideszOpinionBiasRemoved)
+      const redistributed = adjustedFidesz - newFidesz
+      adjustedFidesz = newFidesz
+      if (otherTotal > 0) {
+        adjustedTisza += redistributed * adjustedTisza / otherTotal
+      }
+    }
 
-    // Subtract the disabled biases from Fidesz and redistribute to others
-    const adjustedFidesz = Math.max(0, measuredVotes.fidesz - removedBias)
-    const redistributed = measuredVotes.fidesz - adjustedFidesz
-    const otherTotal = measuredVotes.tisza + measuredVotes.smallParty
+    // 2. Process foreign votes (ADD when ENABLED - these are not in polls!)
+    voteFactors.filter(f => f.enabled).forEach(f => {
+      if (f.beneficiary === "bidirectional") {
+        // Positive = Fidesz, negative = Tisza
+        if (f.value > 0) {
+          adjustedFidesz += f.value
+        } else {
+          adjustedTisza += Math.abs(f.value)
+        }
+      } else {
+        // Standard Fidesz bias
+        adjustedFidesz += f.value
+      }
+    })
 
     return {
-      tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
+      tisza: adjustedTisza,
       fidesz: adjustedFidesz,
-      smallParty: otherTotal > 0 ? measuredVotes.smallParty + (redistributed * measuredVotes.smallParty / otherTotal) : measuredVotes.smallParty,
+      smallParty: measuredVotes.smallParty,
     }
-  }, [measuredVotes, voteFactors])
+  }, [measuredVotes, opinionFactors, voteFactors])
 
   const winner: "tisza" | "fidesz" = effectiveVotes.tisza >= effectiveVotes.fidesz ? "tisza" : "fidesz"
 
@@ -1280,6 +1356,14 @@ export function ParliamentVisualization() {
     setMeasuredVotes(prev => ({ ...prev, [party]: value }))
   }, [])
 
+  const handleOpinionFactorToggle = useCallback((id: string) => {
+    setOpinionFactors(prev => prev.map(f => f.id === id ? { ...f, enabled: !f.enabled } : f))
+  }, [])
+
+  const handleOpinionFactorChange = useCallback((id: string, value: number) => {
+    setOpinionFactors(prev => prev.map(f => f.id === id ? { ...f, value } : f))
+  }, [])
+
   const handleVoteFactorToggle = useCallback((id: string) => {
     setVoteFactors(prev => prev.map(f => f.id === id ? { ...f, enabled: !f.enabled } : f))
   }, [])
@@ -1320,11 +1404,11 @@ export function ParliamentVisualization() {
 
   const allReferences = useMemo(() => {
     const refs = new Map<string, { title: string; url: string; source: string }>()
-    ;[...voteFactors, ...seatFactors].forEach(f => {
+    ;[...opinionFactors, ...voteFactors, ...seatFactors].forEach(f => {
       f.references.forEach(r => refs.set(r.url, r))
     })
     return Array.from(refs.values())
-  }, [voteFactors, seatFactors])
+  }, [opinionFactors, voteFactors, seatFactors])
 
   return (
     <div className="min-h-screen bg-background">
@@ -1381,9 +1465,12 @@ export function ParliamentVisualization() {
                   measuredVotes={measuredVotes}
                   fairVotes={fairVotes}
                   onPollChange={handlePollChange}
+                  opinionFactors={opinionFactors}
                   voteFactors={voteFactors}
                   seatFactors={seatFactors}
                   winner={winner}
+                  onOpinionFactorToggle={handleOpinionFactorToggle}
+                  onOpinionFactorChange={handleOpinionFactorChange}
                   onVoteFactorToggle={handleVoteFactorToggle}
                   onVoteFactorChange={handleVoteFactorChange}
                   onSeatFactorToggle={handleSeatFactorToggle}
@@ -1446,7 +1533,7 @@ export function ParliamentVisualization() {
                     effectiveVotes={effectiveVotes}
                     measuredVotes={measuredVotes}
                     seats={finalSeats}
-                    hasDisabledVoteBias={voteFactors.some(f => !f.enabled)}
+                    hasDisabledVoteBias={opinionFactors.some(f => !f.enabled) || voteFactors.some(f => !f.enabled)}
                     t={t}
                   />
                 </motion.div>
@@ -1462,7 +1549,7 @@ export function ParliamentVisualization() {
                 transition={{ delay: 0.25 }}
               >
                 <h2 className="text-lg font-semibold mb-6">
-                {t.measuredVotesTitle}
+                {t.measuredPreferenceTitle}
               </h2>
               <PollSliders
                 measuredVotes={measuredVotes}
@@ -1493,7 +1580,23 @@ export function ParliamentVisualization() {
                 {t.tour.restartTour}
               </button>
 
-              {/* Vote-gathering biases */}
+              {/* Opinion-forming biases */}
+              <h3 className="text-base font-semibold mb-1">{t.opinionFormingFactorsTitle}</h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t.opinionFormingFactorsDesc}
+              </p>
+              <BiasControls
+                factors={opinionFactors}
+                winner={winner}
+                lang={lang}
+                onToggle={handleOpinionFactorToggle}
+                onChange={handleOpinionFactorChange}
+              />
+
+              {/* Divider */}
+              <div className="my-6 border-t border-border" />
+
+              {/* Vote-gathering biases (foreign votes) */}
               <h3 className="text-base font-semibold mb-1">{t.voteGatheringFactorsTitle}</h3>
               <p className="text-xs text-muted-foreground mb-4">
                 {t.voteGatheringFactorsDesc}
