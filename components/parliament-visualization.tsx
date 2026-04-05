@@ -956,40 +956,42 @@ export function ParliamentVisualization() {
       {/* Main Grid */}
       <div className="container max-w-6xl mx-auto px-4 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left Column - Parliament (sticky) & Flow */}
-          <div className="lg:col-span-3 space-y-6">
-            <motion.div
-              className="glass-card p-6 lg:sticky lg:top-4 lg:z-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="flex items-center gap-2 mb-6">
-                <Landmark className="w-5 h-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">{t.seatDistribution}</h2>
-              </div>
-              <ParliamentChart seats={finalSeats} />
-              <PartyLegend seats={finalSeats} lang={lang} />
-              <div className="mt-6">
-                <SeatBar seats={finalSeats} t={t} />
-              </div>
-            </motion.div>
+          {/* Left Column - Parliament & Flow (sticky together) */}
+          <div className="lg:col-span-3">
+            <div className="lg:sticky lg:top-4 space-y-6">
+              <motion.div
+                className="glass-card p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center gap-2 mb-6">
+                  <Landmark className="w-5 h-5 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold">{t.seatDistribution}</h2>
+                </div>
+                <ParliamentChart seats={finalSeats} />
+                <PartyLegend seats={finalSeats} lang={lang} />
+                <div className="mt-6">
+                  <SeatBar seats={finalSeats} t={t} />
+                </div>
+              </motion.div>
 
-            <motion.div
-              className="glass-card p-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-            >
-              <FlowDiagram
-                fairVotes={fairVotes}
-                effectiveVotes={effectiveVotes}
-                measuredVotes={measuredVotes}
-                seats={finalSeats}
-                hasDisabledVoteBias={voteFactors.some(f => !f.enabled)}
-                t={t}
-              />
-            </motion.div>
+              <motion.div
+                className="glass-card p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <FlowDiagram
+                  fairVotes={fairVotes}
+                  effectiveVotes={effectiveVotes}
+                  measuredVotes={measuredVotes}
+                  seats={finalSeats}
+                  hasDisabledVoteBias={voteFactors.some(f => !f.enabled)}
+                  t={t}
+                />
+              </motion.div>
+            </div>
           </div>
 
           {/* Right Column - Controls */}
