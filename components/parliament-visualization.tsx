@@ -78,7 +78,7 @@ const translations = {
       restartTour: "Túra újraindítása",
       introTitle: "Üdvözöljük!",
       introText: "Ez az interaktív eszköz bemutatja, hogyan alakulnak át a szavazatok parlamenti mandátumokká a magyar választási rendszerben, és milyen torzítások befolyásolják ezt a folyamatot.",
-      introDisclaimer: "Fontos: Ez nem egy előrejelzés! A vizualizáció az Ön által megadott preferencia-értékekre és torzítási beállításokra épül (minden paraméterhez alapértelmezett érték tartozik). Fedezze fel, hogyan változik a mandátumeloszlás különböző feltételek mellett.",
+      introDisclaimer: "Fontos: Ez nem egy előrejelzés! A vizualizáció az Ön által megadott preferencia-értékekre és torzítási beállításokra épül (mindenhol megadtunk egy alapbeállítást, amit Ön megváltoztathat). Fedezze fel, hogyan változik a mandátumeloszlás különböző feltételek mellett.",
       pollsTitle: "Közvéleménykutatási adatok",
       pollsText: "Állítsa be a pártok jelenlegi támogatottságát a legfrissebb közvéleménykutatások alapján. Ezek az adatok már tartalmazzák a szavazatszerzési torzítások (propaganda, szavazatvásárlás stb.) hatását.",
       biasIntro: "A következő lépésekben megismerheti azokat a torzításokat, amelyek befolyásolják a választási eredményeket. Minden torzításnál beállíthatja annak mértékét és ki-/bekapcsolhatja.",
