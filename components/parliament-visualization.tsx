@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
@@ -15,8 +15,13 @@ import {
   Landmark,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   Globe,
-  Monitor
+  Monitor,
+  ChevronRight,
+  SkipForward,
+  Play,
+  RotateCcw
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
@@ -55,6 +60,23 @@ const translations = {
     helpsWinner: "Győztest segíti",
     seats: "mandátum",
     headerLabel: "Választási elemzés",
+    // Tour translations
+    tour: {
+      next: "Következő",
+      back: "Vissza",
+      skip: "Ugrás a dashboardhoz",
+      startExploring: "Felfedezés indítása",
+      finish: "Befejezés",
+      stepOf: "lépés",
+      restartTour: "Túra újraindítása",
+      introTitle: "Üdvözöljük!",
+      introText: "Ez az interaktív eszköz bemutatja, hogyan alakulnak át a szavazatok parlamenti mandátumokká a magyar választási rendszerben, és milyen torzítások befolyásolják ezt a folyamatot.",
+      introDisclaimer: "Fontos: Ez nem egy előrejelzés! A vizualizáció az Ön által beállított közvéleménykutatási adatokra és torzítási paraméterekre épül. Fedezze fel, hogyan változik a mandátumeloszlás különböző feltételek mellett.",
+      pollsTitle: "Közvéleménykutatási adatok",
+      pollsText: "Állítsa be a pártok jelenlegi támogatottságát a legfrissebb közvéleménykutatások alapján. Ezek az adatok már tartalmazzák a szavazatszerzési torzítások (propaganda, szavazatvásárlás stb.) hatását.",
+      biasIntro: "A következő lépésekben megismerheti azokat a torzításokat, amelyek befolyásolják a választási eredményeket. Minden torzításnál beállíthatja annak mértékét és ki-/bekapcsolhatja.",
+      adjustableNote: "Az alábbi csúszkával beállíthatja a torzítás becsült mértékét. Az alapértelmezett érték egy becslés – módosíthatja saját kutatása alapján.",
+    },
     factors: {
       propaganda: {
         name: "Állami propaganda",
@@ -129,6 +151,23 @@ const translations = {
     helpsWinner: "Helps winner",
     seats: "seats",
     headerLabel: "Electoral Analysis",
+    // Tour translations
+    tour: {
+      next: "Next",
+      back: "Back",
+      skip: "Skip to dashboard",
+      startExploring: "Start exploring",
+      finish: "Finish",
+      stepOf: "of",
+      restartTour: "Restart tour",
+      introTitle: "Welcome!",
+      introText: "This interactive tool shows how votes are converted into parliamentary seats in the Hungarian electoral system, and what biases influence this process.",
+      introDisclaimer: "Important: This is not a prediction! The visualization is based on poll data and bias parameters that you set. Explore how seat distribution changes under different conditions.",
+      pollsTitle: "Poll data",
+      pollsText: "Set the current support levels for parties based on the latest polls. These figures already include the effects of vote-gathering biases (propaganda, vote buying, etc.).",
+      biasIntro: "In the following steps, you'll learn about the biases that affect electoral outcomes. For each bias, you can adjust its magnitude and toggle it on/off.",
+      adjustableNote: "Use the slider below to adjust the estimated magnitude of this bias. The default value is an estimate – feel free to modify it based on your own research.",
+    },
     factors: {
       propaganda: {
         name: "State propaganda",
@@ -790,6 +829,346 @@ function BiasControls({
   )
 }
 
+// Tour panel component for guided onboarding
+function TourPanel({
+  currentPage,
+  totalPages,
+  onNext,
+  onBack,
+  onSkip,
+  onFinish,
+  t,
+  lang,
+  // Content props
+  measuredVotes,
+  fairVotes,
+  onPollChange,
+  voteFactors,
+  seatFactors,
+  winner,
+  onVoteFactorToggle,
+  onVoteFactorChange,
+  onSeatFactorToggle,
+  onSeatFactorChange,
+}: {
+  currentPage: number
+  totalPages: number
+  onNext: () => void
+  onBack: () => void
+  onSkip: () => void
+  onFinish: () => void
+  t: typeof translations.hu
+  lang: Language
+  measuredVotes: VoteShare
+  fairVotes: VoteShare
+  onPollChange: (party: keyof VoteShare, value: number) => void
+  voteFactors: Factor[]
+  seatFactors: Factor[]
+  winner: "tisza" | "fidesz"
+  onVoteFactorToggle: (id: string) => void
+  onVoteFactorChange: (id: string, value: number) => void
+  onSeatFactorToggle: (id: string) => void
+  onSeatFactorChange: (id: string, value: number) => void
+}) {
+  const isLastPage = currentPage === totalPages - 1
+  const isFirstPage = currentPage === 0
+
+  // Calculate which bias we're showing (if any)
+  // Page 0: Intro, Page 1: Polls, Pages 2+: Biases
+  const allFactors = [...voteFactors, ...seatFactors]
+  const biasIndex = currentPage - 2
+  const currentFactor = biasIndex >= 0 ? allFactors[biasIndex] : null
+  const isVoteFactor = currentFactor ? voteFactors.some(f => f.id === currentFactor.id) : false
+
+  const renderContent = () => {
+    // Page 0: Introduction
+    if (currentPage === 0) {
+      return (
+        <div className="space-y-6">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <Landmark className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold">{t.tour.introTitle}</h2>
+          </div>
+          <p className="text-muted-foreground leading-relaxed">
+            {t.tour.introText}
+          </p>
+          <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+            <p className="text-sm text-accent-foreground">
+              <strong>⚠️ {t.tour.introDisclaimer.split(':')[0]}:</strong>
+              {t.tour.introDisclaimer.split(':').slice(1).join(':')}
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    // Page 1: Polls
+    if (currentPage === 1) {
+      const smallPartyName = lang === "hu" ? "Kis párt (5%+)" : "Small party (5%+)"
+      const parties = [
+        { key: "tisza" as const, name: "Tisza", color: PARTY_COLORS.tisza, min: 0, max: 60 },
+        { key: "fidesz" as const, name: "Fidesz", color: PARTY_COLORS.fidesz, min: 0, max: 60 },
+        { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 5, max: 20 },
+      ]
+
+      return (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-bold mb-2">{t.tour.pollsTitle}</h2>
+            <p className="text-sm text-muted-foreground">{t.tour.pollsText}</p>
+          </div>
+
+          <div className="space-y-5">
+            {parties.map((party) => (
+              <div key={party.key} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: party.color }}
+                    />
+                    <span className="text-sm font-medium">{party.name}</span>
+                  </div>
+                  <span className="text-lg font-bold">{measuredVotes[party.key]}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={party.min}
+                  max={party.max}
+                  value={measuredVotes[party.key]}
+                  onChange={(e) => onPollChange(party.key, parseInt(e.target.value))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${party.color} ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%, hsl(220, 15%, 18%) ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%)`,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ExternalLink className="w-4 h-4" />
+              <span>{t.references}</span>
+              <ChevronDown className="w-4 h-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3 space-y-2">
+              <a
+                href="https://taktikaiszavazas.hu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+              >
+                <p className="font-medium">Taktikai Szavazás</p>
+                <p className="text-xs text-muted-foreground">Közvéleménykutatások összesítése</p>
+              </a>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      )
+    }
+
+    // Pages 2+: Individual bias factors
+    if (currentFactor) {
+      const factorT = t.factors[currentFactor.nameKey as keyof typeof t.factors]
+      const isWinnerFactor = currentFactor.beneficiary === "winner"
+      const actualBeneficiary = isWinnerFactor ? winner : "fidesz"
+      const beneficiaryColor = actualBeneficiary === "tisza" ? PARTY_COLORS.tisza : PARTY_COLORS.fidesz
+      const beneficiaryName = actualBeneficiary === "tisza" ? "Tisza" : "Fidesz"
+      const unit = currentFactor.category === "vote-gathering" ? "%" : ` ${t.seats}`
+
+      const handleToggle = isVoteFactor ? onVoteFactorToggle : onSeatFactorToggle
+      const handleChange = isVoteFactor ? onVoteFactorChange : onSeatFactorChange
+
+      return (
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-xl font-bold">{factorT.name}</h2>
+              {isWinnerFactor && (
+                <Badge variant="outline" className="text-[10px] gap-0.5 px-1.5 py-0">
+                  <TrendingUp className="h-2.5 w-2.5" />
+                  {t.helpsWinner}
+                </Badge>
+              )}
+            </div>
+            <Badge variant="secondary" className="text-xs">
+              {currentFactor.category === "vote-gathering" ? t.voteGatheringBiases : t.seatConversionBiases}
+            </Badge>
+          </div>
+
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {factorT.description}
+          </p>
+
+          {/* Adjustable note */}
+          {currentFactor.maxValue !== currentFactor.minValue && (
+            <p className="text-xs text-muted-foreground italic">
+              {t.tour.adjustableNote}
+            </p>
+          )}
+
+          <div className="glass-card p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{lang === "hu" ? "Aktív" : "Active"}</span>
+              <Switch
+                checked={currentFactor.enabled}
+                onCheckedChange={() => handleToggle(currentFactor.id)}
+              />
+            </div>
+
+            {currentFactor.maxValue !== currentFactor.minValue && (
+              <div className={`space-y-2 ${!currentFactor.enabled ? "opacity-40" : ""}`}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{lang === "hu" ? "Hatás mértéke" : "Effect magnitude"}</span>
+                  <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
+                    +{currentFactor.value}{unit} {beneficiaryName}
+                  </span>
+                </div>
+                <Slider
+                  value={[currentFactor.value]}
+                  onValueChange={([v]) => handleChange(currentFactor.id, v)}
+                  min={currentFactor.minValue}
+                  max={currentFactor.maxValue}
+                  step={1}
+                  className="w-full"
+                  disabled={!currentFactor.enabled}
+                />
+              </div>
+            )}
+
+            {currentFactor.maxValue === currentFactor.minValue && (
+              <div className={`text-sm ${!currentFactor.enabled ? "opacity-40" : ""}`}>
+                <span className="text-muted-foreground">{lang === "hu" ? "Fix hatás:" : "Fixed effect:"} </span>
+                <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
+                  +{currentFactor.value}{unit} {beneficiaryName}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {currentFactor.references.length > 0 && (
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <ExternalLink className="w-4 h-4" />
+                <span>{t.references}</span>
+                <ChevronDown className="w-4 h-4" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-3 space-y-2">
+                {currentFactor.references.map((ref, i) => (
+                  <a
+                    key={i}
+                    href={ref.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+                  >
+                    <p className="font-medium">{ref.title}</p>
+                    <p className="text-xs text-muted-foreground">{ref.source}</p>
+                  </a>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </div>
+      )
+    }
+
+    return null
+  }
+
+  return (
+    <div className="glass-card p-6 flex flex-col h-full">
+      {/* Progress indicator with navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-xs text-muted-foreground">
+          {currentPage + 1} {t.tour.stepOf} {totalPages}
+        </span>
+        <div className="flex items-center gap-2">
+          {/* Back button */}
+          {!isFirstPage && (
+            <button
+              onClick={onBack}
+              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={t.tour.back}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+          {/* Dots */}
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === currentPage ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/30"
+                }`}
+              />
+            ))}
+          </div>
+          {/* Forward button */}
+          {!isLastPage && currentPage > 0 && (
+            <button
+              onClick={onNext}
+              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={t.tour.next}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Navigation */}
+      <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+        <button
+          onClick={onSkip}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+        >
+          <SkipForward className="w-4 h-4" />
+          {t.tour.skip}
+        </button>
+
+        <button
+          onClick={isLastPage ? onFinish : onNext}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+        >
+          {isFirstPage ? (
+            <>
+              <Play className="w-4 h-4" />
+              {t.tour.startExploring}
+            </>
+          ) : isLastPage ? (
+            t.tour.finish
+          ) : (
+            <>
+              {t.tour.next}
+              <ChevronRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // Main component
 export function ParliamentVisualization() {
   const [lang, setLang] = useState<Language>("hu")
@@ -797,6 +1176,13 @@ export function ParliamentVisualization() {
   const [voteFactors, setVoteFactors] = useState<Factor[]>(voteGatheringFactors)
   const [seatFactors, setSeatFactors] = useState<Factor[]>(seatConversionFactors)
   const [showReferences, setShowReferences] = useState(false)
+
+  // Tour state
+  const [isTourMode, setIsTourMode] = useState(true)
+  const [tourPage, setTourPage] = useState(0)
+
+  // Total tour pages: intro + polls + all biases
+  const totalTourPages = 2 + voteFactors.length + seatFactors.length
 
   const t = translations[lang]
 
@@ -910,6 +1296,28 @@ export function ParliamentVisualization() {
     setSeatFactors(prev => prev.map(f => f.id === id ? { ...f, value } : f))
   }, [])
 
+  // Tour navigation
+  const handleTourNext = useCallback(() => {
+    setTourPage(prev => Math.min(prev + 1, totalTourPages - 1))
+  }, [totalTourPages])
+
+  const handleTourBack = useCallback(() => {
+    setTourPage(prev => Math.max(prev - 1, 0))
+  }, [])
+
+  const handleTourSkip = useCallback(() => {
+    setIsTourMode(false)
+  }, [])
+
+  const handleTourFinish = useCallback(() => {
+    setIsTourMode(false)
+  }, [])
+
+  const handleRestartTour = useCallback(() => {
+    setTourPage(0)
+    setIsTourMode(true)
+  }, [])
+
   const allReferences = useMemo(() => {
     const refs = new Map<string, { title: string; url: string; source: string }>()
     ;[...voteFactors, ...seatFactors].forEach(f => {
@@ -953,12 +1361,39 @@ export function ParliamentVisualization() {
         </p>
       </motion.section>
 
-      {/* Main Grid */}
+      {/* Main Content */}
       <div className="container max-w-6xl mx-auto px-4 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left Column - Parliament & Flow (sticky together) */}
-          <div className="lg:col-span-3">
-            <div className="lg:sticky lg:top-4 space-y-6">
+        {isTourMode ? (
+          /* Tour Mode Layout */
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Tour Panel - on top on mobile, right on desktop */}
+            <div className="order-1 lg:order-2">
+              <div className="lg:sticky lg:top-4">
+                <TourPanel
+                  currentPage={tourPage}
+                  totalPages={totalTourPages}
+                  onNext={handleTourNext}
+                  onBack={handleTourBack}
+                  onSkip={handleTourSkip}
+                  onFinish={handleTourFinish}
+                  t={t}
+                  lang={lang}
+                  measuredVotes={measuredVotes}
+                  fairVotes={fairVotes}
+                  onPollChange={handlePollChange}
+                  voteFactors={voteFactors}
+                  seatFactors={seatFactors}
+                  winner={winner}
+                  onVoteFactorToggle={handleVoteFactorToggle}
+                  onVoteFactorChange={handleVoteFactorChange}
+                  onSeatFactorToggle={handleSeatFactorToggle}
+                  onSeatFactorChange={handleSeatFactorChange}
+                />
+              </div>
+            </div>
+
+            {/* Parliament - on bottom on mobile, left on desktop */}
+            <div className="order-2 lg:order-1">
               <motion.div
                 className="glass-card p-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -975,34 +1410,58 @@ export function ParliamentVisualization() {
                   <SeatBar seats={finalSeats} t={t} />
                 </div>
               </motion.div>
-
-              <motion.div
-                className="glass-card p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-              >
-                <FlowDiagram
-                  fairVotes={fairVotes}
-                  effectiveVotes={effectiveVotes}
-                  measuredVotes={measuredVotes}
-                  seats={finalSeats}
-                  hasDisabledVoteBias={voteFactors.some(f => !f.enabled)}
-                  t={t}
-                />
-              </motion.div>
             </div>
           </div>
+        ) : (
+          /* Dashboard Mode Layout */
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Left Column - Parliament & Flow (sticky together) */}
+            <div className="lg:col-span-3">
+              <div className="lg:sticky lg:top-4 space-y-6">
+                <motion.div
+                  className="glass-card p-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <div className="flex items-center gap-2 mb-6">
+                    <Landmark className="w-5 h-5 text-muted-foreground" />
+                    <h2 className="text-lg font-semibold">{t.seatDistribution}</h2>
+                  </div>
+                  <ParliamentChart seats={finalSeats} />
+                  <PartyLegend seats={finalSeats} lang={lang} />
+                  <div className="mt-6">
+                    <SeatBar seats={finalSeats} t={t} />
+                  </div>
+                </motion.div>
 
-          {/* Right Column - Controls */}
-          <div className="lg:col-span-2 space-y-6">
-            <motion.div
-              className="glass-card p-6"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
-            >
-              <h2 className="text-lg font-semibold mb-6">
+                <motion.div
+                  className="glass-card p-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                >
+                  <FlowDiagram
+                    fairVotes={fairVotes}
+                    effectiveVotes={effectiveVotes}
+                    measuredVotes={measuredVotes}
+                    seats={finalSeats}
+                    hasDisabledVoteBias={voteFactors.some(f => !f.enabled)}
+                    t={t}
+                  />
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Right Column - Controls */}
+            <div className="lg:col-span-2 space-y-6">
+              <motion.div
+                className="glass-card p-6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <h2 className="text-lg font-semibold mb-6">
                 {t.measuredVotesTitle}
               </h2>
               <PollSliders
@@ -1025,6 +1484,15 @@ export function ParliamentVisualization() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.35 }}
             >
+              {/* Restart tour CTA */}
+              <button
+                onClick={handleRestartTour}
+                className="w-full mb-6 p-3 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="w-4 h-4" />
+                {t.tour.restartTour}
+              </button>
+
               {/* Vote-gathering biases */}
               <h3 className="text-base font-semibold mb-1">{t.voteGatheringFactorsTitle}</h3>
               <p className="text-xs text-muted-foreground mb-4">
@@ -1092,6 +1560,7 @@ export function ParliamentVisualization() {
             </Collapsible>
           </div>
         </div>
+        )}
       </div>
     </div>
   )
