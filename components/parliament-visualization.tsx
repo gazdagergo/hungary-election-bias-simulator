@@ -101,15 +101,15 @@ const translations = {
       },
       gerrymandering: {
         name: "Gerrymandering",
-        description: "A 2011-es törvény 176-ról 106-ra csökkentette a körzeteket, átláthatatlan módon átrajzolva a határokat. A Fidesz szavazatai 3-4%-kal többet érnek az egyenlőtlenségek miatt. A 2002-es és 2006-os választás is Fidesz-győzelem lett volna az új térképpel. 2022-re a körzetek megsértették a törvényes 20%-os eltérési szabályt."
+        description: "A 2011-es törvény átláthatatlanul rajzolta át a körzeteket. Szimulációk szerint egyenlő szavazatarány esetén a Fidesz ~10 mandátummal előrébb végezne. Az ellenzéknek 3-5%-kal több szavazatra van szüksége a többséghez. A 2002-es és 2006-os választás is Fidesz-győzelem lett volna az új térképpel."
       },
       twoRound: {
         name: "Kétfordulós szavazás eltörlése",
-        description: "2011-ben egykörös rendszerre váltottak. Ez megakadályozza, hogy az ellenzéki szavazók a második fordulóban taktikailag összefogva szavazzanak."
+        description: "2011-ben egykörös FPTP-rendszerre váltottak. 2014-ben a Fidesz 44%-os listás eredménnyel 91/106 egyéni körzetet nyert (86%). A töredezett ellenzék 35-40%-os Fidesz-győzelmeket eredményezett sok körzetben. Ez megakadályozza az ellenzék taktikai összefogását."
       },
       minorityMp: {
         name: "Német nemzetiségi képviselő",
-        description: "A német nemzetiségi lista képviselője, Ritter Imre, korábban fideszes önkormányzati képviselő volt, és minden parlamenti szavazáson a kormányt támogatja."
+        description: "Ritter Imre, volt fideszes önkormányzati képviselő, a német nemzetiségi lista mandátumát tölti be 2018 óta. Minden parlamenti szavazáson a kormányt támogatja, többször biztosítva a kétharmadot. 2026-ra a német nemzetiség valószínűleg elveszíti a mandátumot a regisztrált szavazók csökkenése miatt."
       },
       winnerCompensation: {
         name: "Győzteskompenzáció",
@@ -197,15 +197,15 @@ const translations = {
       },
       gerrymandering: {
         name: "Gerrymandering",
-        description: "The 2011 law reduced constituencies from 176 to 106, redrawing boundaries non-transparently. Fidesz votes worth 3-4% more due to inequalities. The 2002 and 2006 elections would have been Fidesz wins with the new map. By 2022, districts violated the legal 20% deviation rule."
+        description: "The 2011 law redrew boundaries non-transparently. Simulations show with equal votes, Fidesz would win ~10 more seats. Opposition needs 3-5% more votes just to achieve a majority. The 2002 and 2006 elections would have been Fidesz wins with the new map."
       },
       twoRound: {
         name: "Abolition of two-round voting",
-        description: "In 2011, they switched to a single-round system. This prevents opposition voters from tactically uniting in the second round."
+        description: "In 2011, switched to single-round FPTP. In 2014, Fidesz won 91/106 districts (86%) with only 44% list votes. Fragmented opposition led to 35-40% Fidesz wins in many districts. This prevents tactical opposition coordination."
       },
       minorityMp: {
         name: "German minority MP",
-        description: "The German minority list representative, Imre Ritter, was previously a Fidesz municipal representative and supports the government in every parliamentary vote."
+        description: "Imre Ritter, former Fidesz municipal rep, holds the German minority seat since 2018. Supports the government in every vote, often securing the 2/3 majority. In 2026, the German minority will likely lose the seat due to declining registered voters."
       },
       winnerCompensation: {
         name: "Winner compensation",
@@ -410,7 +410,14 @@ const seatConversionFactors: Factor[] = [
     category: "seat-conversion",
     beneficiary: "fidesz",
     references: [
-      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" }
+      // Academic research
+      { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" },
+      { title: "On the Way to Limited Competitiveness", url: "https://onlinelibrary.wiley.com/doi/full/10.1111/spsr.12535", source: "Swiss Political Science Review (2023)" },
+      { title: "The new Hungarian election system's beneficiaries", url: "http://cens.ceu.edu/sites/cens.ceu.edu/files/attachment/article/579/laszlo-thenewhungarianelectionsystemsbeneficiaries.pdf", source: "CEU CENS" },
+      // International reports
+      { title: "How Viktor Orbán Wins", url: "https://www.journalofdemocracy.org/articles/how-viktor-orban-wins/", source: "Journal of Democracy" },
+      { title: "Hungary's Electoral System - IOG", url: "https://instituteofgeoeconomics.org/en/research/hungarys-electoral-system-constructing-a-system-favorable-to-the-governing-party-and-its-future-prospects/", source: "Institute of Geoeconomics" },
+      { title: "OSW Hungary election analysis", url: "https://www.osw.waw.pl/en/publikacje/osw-commentary/2026-02-25/osw-update-hungary-election-no-2", source: "OSW Centre for Eastern Studies" },
     ]
   },
   {
@@ -423,7 +430,14 @@ const seatConversionFactors: Factor[] = [
     category: "seat-conversion",
     beneficiary: "fidesz",
     references: [
-      { title: "Hungary 2022: Manipulated Elections - Minority mandates", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" }
+      // International reports
+      { title: "Hungary 2022: Manipulated Elections - Minority mandates", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
+      { title: "How Viktor Orbán Wins", url: "https://www.journalofdemocracy.org/articles/how-viktor-orban-wins/", source: "Journal of Democracy" },
+      // Hungarian sources
+      { title: "German Minority Receives Mandate in Parliament", url: "https://hungarytoday.hu/2022-general-parliamentary-elections-hungary-hungarian-parliament-german-minority-imre-ritter/", source: "Hungary Today" },
+      { title: "Imre Ritter - Wikipedia", url: "https://en.wikipedia.org/wiki/Imre_Ritter", source: "Wikipedia" },
+      { title: "What Will Happen to the German Mandate?", url: "https://hungarytoday.hu/what-will-happen-to-the-german-mandate/", source: "Hungary Today" },
+      { title: "Orbán already secured a mandate in Parliament", url: "https://dailynewshungary.com/orban-already-secured-a-mandate-in-parliament/", source: "Daily News Hungary" },
     ]
   },
   {
