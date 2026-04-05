@@ -117,11 +117,11 @@ const translations = {
       },
       parliamentSize: {
         name: "Parlament létszámának csökkentése",
-        description: "386-ról 199-re csökkentették a létszámot. A többségi elem aránya 46%-ról 53%-ra nőtt (106/199). Kevesebb mandátum = nagyobb torzítás a győztes javára. A mindenkori győztest segíti – ha a Tisza nyer, nekik is kedvez."
+        description: "386-ról 199-re csökkentették a létszámot. A többségi elem aránya 46%-ról 53%-ra nőtt. Ez a 2011-es változás TOVÁBBI torzítást hozott az 1989-es alaprendszerhez képest. A mindenkori győztest segíti – ha a Tisza nyer, nekik is kedvez."
       },
       electoralWeighting: {
         name: "Választási rendszer súlyozása (1989 óta)",
-        description: "A magyar vegyes rendszer eredendően a győztest segíti – ez nem Fidesz-találmány, 1989 óta létezik. A többségi elem (106 egyéni körzet) természeténél fogva torzít: 2022-ben 53% szavazat = 68% mandátum. A mindenkori győztest segíti."
+        description: "A magyar vegyes rendszer ALAP győztes-torzítása – ez nem Fidesz-találmány, 1989 óta létezik. A többségi elem természeténél fogva a győztest segíti. A 2011-es méretcsökkentés hatása ezen FELÜL jelentkezik."
       }
     }
   },
@@ -213,11 +213,11 @@ const translations = {
       },
       parliamentSize: {
         name: "Reduction of parliament size",
-        description: "Reduced from 386 to 199 seats. Majoritarian element rose from 46% to 53% (106/199). Fewer seats = greater winner distortion. This helps whoever wins – if Tisza wins, it benefits them too."
+        description: "Reduced from 386 to 199 seats. Majoritarian element rose from 46% to 53%. This 2011 change added ADDITIONAL distortion on top of the 1989 baseline. Helps whoever wins – if Tisza wins, it benefits them too."
       },
       electoralWeighting: {
         name: "Electoral system weighting (since 1989)",
-        description: "The Hungarian mixed system inherently helps the winner – not a Fidesz invention, exists since 1989. The majoritarian element (106 districts) naturally distorts: in 2022, 53% votes = 68% seats. Helps whoever wins."
+        description: "The Hungarian mixed system's BASELINE winner-bias – not a Fidesz invention, exists since 1989. The majoritarian element naturally favors the winner. The 2011 size reduction effect applies ON TOP of this."
       }
     }
   }
@@ -480,7 +480,7 @@ const seatConversionFactors: Factor[] = [
   {
     id: "electoral-weighting",
     nameKey: "electoralWeighting",
-    enabled: false,
+    enabled: true,
     value: 8,
     maxValue: 15,
     minValue: 4,
