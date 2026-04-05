@@ -85,11 +85,11 @@ const translations = {
     factors: {
       propaganda: {
         name: "Állami propaganda",
-        description: "A közmédia és a kormánypárti média dominanciája. 2019-re a hírmédiapiac 77,8%-át kormánypárti média uralta. Az MTVA évi 130 milliárd forintból működik. Ez a szavazók véleményét befolyásolja, mielőtt a szavazófülkébe lépnének."
+        description: "A közmédia és a kormánypárti média dominanciája. Akadémiai kutatás szerint 8-12%-os választási hatással bír. A hírmédiapiac 78-80%-át kormánypárti média uralja. Az MTVA 2024-ben 142 milliárd, 2025-ben 165 milliárd forintból működik. A médiafelületek iránti bizalom 23% – az EU legalacsonyabb értéke. Magyarország a 67. a sajtószabadság-rangsorban."
       },
       voteBuying: {
         name: "Szavazatvásárlás",
-        description: "Közpénzből finanszírozott kampányok, közfoglalkoztatottak nyomás alá helyezése, szelektív forrás-elosztás. A szociálisan kiszolgáltatott szavazók befolyásolása."
+        description: "Közfoglalkoztatottak nyomás alá helyezése, szelektív forrás-elosztás. Becslések szerint 2022-ben 200-300 ezer, 2026-ra 500-600 ezer szavazatot céloznak meg 53 választókerületben. Módszerek: közmunka elvétele, készpénz (5-20 ezer Ft), közművek kikapcsolása, gyámhivatali fenyegetés."
       },
       mailVoting: {
         name: "Határon túli levélszavazás",
@@ -181,11 +181,11 @@ const translations = {
     factors: {
       propaganda: {
         name: "State propaganda",
-        description: "Dominance of public and pro-government media. By 2019, 77.8% of the news media market was controlled by pro-government media. MTVA operates with 130 billion HUF annually. This influences voters' opinions before they enter the voting booth."
+        description: "Dominance of public and pro-government media. Academic research estimates 8-12% electoral impact. 78-80% of news media controlled by pro-government outlets. MTVA budget: 142 billion HUF (2024), 165 billion (2025). Media trust at 23% – lowest in EU. Hungary ranks 67th in press freedom."
       },
       voteBuying: {
         name: "Vote buying",
-        description: "Campaigns financed with public funds, pressure on public workers, selective resource allocation. Influencing socially vulnerable voters."
+        description: "Pressure on public workers, selective resource allocation. Estimates suggest 200-300K votes bought in 2022, targeting 500-600K in 2026 across 53 constituencies. Methods: threatening public works jobs, cash (5-20K HUF), cutting utilities, child protection threats."
       },
       mailVoting: {
         name: "Cross-border mail voting",
@@ -308,7 +308,18 @@ const opinionFormingFactors: Factor[] = [
     category: "opinion-forming",
     beneficiary: "fidesz",
     references: [
-      { title: "Blackmailing of financially vulnerable voters", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" }
+      // International reports
+      { title: "What is the price of a vote? Voter intimidation in Hungary's poorest communities", url: "https://www.errc.org/news/what-is-the-price-of-a-vote-the-shocking-extent-of-voter-intimidation-in-hungarys-poorest-communities", source: "European Roma Rights Centre (2026)" },
+      { title: "Election Manipulation and Electoral Fraud in Hungary", url: "https://democracyinstitute.ceu.edu/articles/balint-magyar-and-balint-madlovics-election-manipulation-and-electoral-fraud-hungary", source: "CEU Democracy Institute" },
+      { title: "Hungary 2022: Manipulated Elections - Vote buying", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
+      { title: "OSCE/ODIHR Final Report 2022 - Voter intimidation concerns", url: "https://www.osce.org/odihr/elections/523565", source: "OSCE" },
+      { title: "Safeguarding Hungary's 2026 Elections", url: "https://www.gmfus.org/news/safeguarding-hungarys-2026-elections-robust-observation-essential", source: "German Marshall Fund" },
+      { title: "The Price of a Vote in Orbán's Hungary", url: "https://hungarianobserver.substack.com/p/the-price-of-a-vote-in-orbans-hungary", source: "Hungarian Observer" },
+      // Hungarian sources
+      { title: "Votes for money or food, chain voting – election fraud recorded", url: "https://english.atlatszo.hu/2022/04/06/votes-for-money-or-food-chain-voting-election-fraud-recorded-across-the-country/", source: "Átlátszó (2022)" },
+      { title: "A szavazat ára - dokumentumfilm a szavazatvásárlásról", url: "https://telex.hu/belfold/2026/03/26/de-akciokozosseg-a-szavazat-ara-dokumentumfilm-szavazatvasarlas", source: "Telex" },
+      { title: "Szavazatvásárlás a legszegényebb településeken", url: "https://hvg.hu/itthon/20260326_szavazatvasarlas-fidesz-videk-a-szavazat-ara-dokumentumfilm-de-akciokozosseg-ebx", source: "HVG" },
+      { title: "Szavazatvásárlás, szegénység, Fidesz", url: "https://nepszava.hu/3316879_szavazatvasarlas-szegenyseg-fidesz", source: "Népszava" },
     ]
   },
 ]
