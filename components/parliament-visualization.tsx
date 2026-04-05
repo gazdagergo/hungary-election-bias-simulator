@@ -280,8 +280,22 @@ const opinionFormingFactors: Factor[] = [
     category: "opinion-forming",
     beneficiary: "fidesz",
     references: [
+      // Academic research
+      { title: "Media Capture and Electoral Manipulation: A Causal Inference Analysis (2010-2025)", url: "https://www.researchgate.net/publication/398721490_Media_Capture_and_Electoral_Manipulation_A_Causal_Inference_Analysis_of_Hungary's_Democratic_Backsliding_2010-2025", source: "ResearchGate (2025)" },
+      // International reports
+      { title: "OSCE/ODIHR Final Report 2022", url: "https://www.osce.org/odihr/elections/523565", source: "OSCE" },
       { title: "Hungary 2022: Manipulated Elections", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
-      { title: "OSCE/ODIHR Final Report 2022", url: "https://www.osce.org/odihr/elections/523565", source: "OSCE" }
+      { title: "Hungary: Nations in Transit 2024", url: "https://freedomhouse.org/country/hungary/nations-transit/2024", source: "Freedom House" },
+      { title: "Hungary: Freedom in the World 2024", url: "https://freedomhouse.org/country/hungary/freedom-world/2024", source: "Freedom House" },
+      { title: "Digital News Report 2024 - Hungary", url: "https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024/hungary", source: "Reuters Institute" },
+      { title: "Hungary - Press Freedom Index", url: "https://rsf.org/en/country/hungary", source: "Reporters Without Borders" },
+      { title: "I Can't Do My Job as a Journalist", url: "https://www.hrw.org/report/2024/02/13/i-cant-do-my-job-journalist/systematic-undermining-media-freedom-hungary", source: "Human Rights Watch (2024)" },
+      { title: "Media Capture Monitoring Report: Hungary", url: "https://ipi.media/wp-content/uploads/2024/11/Hungary-Media-Capture-Monitoring-Report-Final-1.pdf", source: "IPI (2024)" },
+      { title: "EMFA Monitor Hungary", url: "https://mertek.eu/en/2024/12/03/emfa-monitor-hungary/", source: "Mérték Media Monitor" },
+      // Hungarian sources
+      { title: "142 milliárd forint lesz jövőre a közmédia büdzséje", url: "https://nepszava.hu/3213193_mtva-koltsegvetes-2024-kozmedia-142-milliard", source: "Népszava" },
+      { title: "MTVA költségvetés 2025 - közmédia", url: "https://media1.hu/2024/10/21/mtva-koltsegvetes-2025-kozmedia/", source: "Media1" },
+      { title: "Közmédia-mérleg: nem volt elég a 140 milliárd forint sem", url: "https://mfor.hu/cikkek/makro/kozmedia-merleg-nem-volt-eleg-a-140-milliard-forint-sem.html", source: "mfor.hu" },
     ]
   },
   {
