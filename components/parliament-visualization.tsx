@@ -422,40 +422,65 @@ function ParliamentChart({ seats }: { seats: PartySeats }) {
     setMounted(true)
   }, [])
 
-  // Generate seat positions with even spacing across all rows
-  // Using constant arc-length per seat for even distribution
+  // Generate seat positions for exactly 199 seats in a proper half-circle
+  // Uniform spacing between dots across all rows
   const seatPositions = useMemo(() => {
     const centerX = 280
-    const centerY = 270
-    const innerRadius = 80
-    const outerRadius = 240
+    const centerY = 260
+    const innerRadius = 60
+    const outerRadius = 220
     const numRows = 7
-    const dotRadius = 7
-    const dotSpacing = dotRadius * 2.2 // Space between dot centers
 
-    // Calculate total seats we can fit with even spacing
+    // Calculate radii for each row
+    const radii: number[] = []
+    for (let row = 0; row < numRows; row++) {
+      radii.push(innerRadius + (outerRadius - innerRadius) * (row / (numRows - 1)))
+    }
+
+    // Calculate the spacing that gives us exactly 199 seats
+    // Total arc length = π * (r1 + r2 + ... + r7)
+    // seats = totalArcLength / spacing, so spacing = totalArcLength / 199
+    const totalArcLength = radii.reduce((sum, r) => sum + Math.PI * r, 0)
+    const dotSpacing = totalArcLength / TOTAL_SEATS
+
+    // Calculate seats per row based on uniform spacing
+    const seatsPerRow: number[] = radii.map(r => Math.round(Math.PI * r / dotSpacing))
+
+    // Adjust to ensure exactly 199 total
+    let total = seatsPerRow.reduce((a, b) => a + b, 0)
+    while (total !== TOTAL_SEATS) {
+      if (total > TOTAL_SEATS) {
+        // Remove from largest row
+        const maxIdx = seatsPerRow.indexOf(Math.max(...seatsPerRow))
+        seatsPerRow[maxIdx]--
+        total--
+      } else {
+        // Add to smallest row
+        const minIdx = seatsPerRow.indexOf(Math.min(...seatsPerRow))
+        seatsPerRow[minIdx]++
+        total++
+      }
+    }
+
     const positions: { x: number; y: number; angle: number }[] = []
 
     for (let row = 0; row < numRows; row++) {
-      const radius = innerRadius + (outerRadius - innerRadius) * (row / (numRows - 1))
-      // Calculate how many dots fit in this semicircle with even spacing
-      const arcLength = Math.PI * radius
-      const seatsInRow = Math.floor(arcLength / dotSpacing)
+      const radius = radii[row]
+      const seatsInThisRow = seatsPerRow[row]
 
-      for (let i = 0; i < seatsInRow; i++) {
+      for (let i = 0; i < seatsInThisRow; i++) {
         // Distribute evenly across the semicircle (π to 0)
-        const angle = Math.PI - (Math.PI * (i + 0.5)) / seatsInRow
+        const angle = Math.PI - (Math.PI * (i + 0.5)) / seatsInThisRow
         const x = centerX + radius * Math.cos(angle)
         const y = centerY - radius * Math.sin(angle)
         positions.push({ x, y, angle })
       }
     }
 
-    // Take only the 199 seats we need, sorted by angle for radial coloring
-    // Sort by angle (left to right = π to 0), which means descending order
+    // Sort by angle (left to right = π to 0) for radial coloring
     positions.sort((a, b) => b.angle - a.angle)
 
-    return positions.slice(0, TOTAL_SEATS)
+    return positions
   }, [])
 
   // Assign colors based on sorted (radial) order
@@ -1314,11 +1339,32 @@ export function ParliamentVisualization() {
     const total = effectiveVotes.tisza + effectiveVotes.fidesz + effectiveVotes.smallParty
     if (total === 0) return { tisza: 0, fidesz: 0, smallParty: 0 }
 
-    return {
-      tisza: Math.round(TOTAL_SEATS * effectiveVotes.tisza / total),
-      fidesz: Math.round(TOTAL_SEATS * effectiveVotes.fidesz / total),
-      smallParty: Math.round(TOTAL_SEATS * effectiveVotes.smallParty / total),
+    // Use largest remainder method to ensure seats sum to exactly 199
+    const exactTisza = TOTAL_SEATS * effectiveVotes.tisza / total
+    const exactFidesz = TOTAL_SEATS * effectiveVotes.fidesz / total
+    const exactSmallParty = TOTAL_SEATS * effectiveVotes.smallParty / total
+
+    let tisza = Math.floor(exactTisza)
+    let fidesz = Math.floor(exactFidesz)
+    let smallParty = Math.floor(exactSmallParty)
+
+    // Distribute remaining seats by largest remainder
+    const remainders = [
+      { party: 'tisza', remainder: exactTisza - tisza },
+      { party: 'fidesz', remainder: exactFidesz - fidesz },
+      { party: 'smallParty', remainder: exactSmallParty - smallParty },
+    ].sort((a, b) => b.remainder - a.remainder)
+
+    let remaining = TOTAL_SEATS - (tisza + fidesz + smallParty)
+    for (const r of remainders) {
+      if (remaining <= 0) break
+      if (r.party === 'tisza') tisza++
+      else if (r.party === 'fidesz') fidesz++
+      else smallParty++
+      remaining--
     }
+
+    return { tisza, fidesz, smallParty }
   }, [effectiveVotes])
 
   const finalSeats = useMemo((): PartySeats => {
@@ -1332,24 +1378,39 @@ export function ParliamentVisualization() {
 
     let tisza = proportionalSeats.tisza
     let fidesz = proportionalSeats.fidesz
-    const smallParty = proportionalSeats.smallParty
+    let smallParty = proportionalSeats.smallParty
 
-    fidesz += fideszBias
-    tisza -= fideszBias
+    // Fidesz bias: transfer seats from Tisza to Fidesz
+    const actualFideszBias = Math.min(fideszBias, tisza) // Can't take more than Tisza has
+    fidesz += actualFideszBias
+    tisza -= actualFideszBias
 
+    // Winner bias: transfer seats from loser to winner
     if (winner === "tisza") {
-      tisza += winnerBias
-      fidesz -= Math.round(winnerBias * 0.7)
+      const actualWinnerBias = Math.min(winnerBias, fidesz)
+      tisza += actualWinnerBias
+      fidesz -= actualWinnerBias
     } else {
-      fidesz += winnerBias
-      tisza -= Math.round(winnerBias * 0.7)
+      const actualWinnerBias = Math.min(winnerBias, tisza)
+      fidesz += actualWinnerBias
+      tisza -= actualWinnerBias
     }
 
-    return {
-      tisza: Math.max(0, Math.min(TOTAL_SEATS, tisza)),
-      fidesz: Math.max(0, Math.min(TOTAL_SEATS, fidesz)),
-      smallParty: Math.max(0, smallParty),
+    // Ensure no negative values and total equals 199
+    tisza = Math.max(0, tisza)
+    fidesz = Math.max(0, fidesz)
+    smallParty = Math.max(0, smallParty)
+
+    // Adjust if total exceeds 199 (shouldn't happen with proper bias logic)
+    const total = tisza + fidesz + smallParty
+    if (total > TOTAL_SEATS) {
+      // Reduce the largest party
+      const excess = total - TOTAL_SEATS
+      if (fidesz >= tisza) fidesz -= excess
+      else tisza -= excess
     }
+
+    return { tisza, fidesz, smallParty }
   }, [proportionalSeats, seatFactors, winner])
 
   const handlePollChange = useCallback((party: keyof VoteShare, value: number) => {
