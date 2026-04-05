@@ -796,7 +796,6 @@ export function ParliamentVisualization() {
   const [measuredVotes, setMeasuredVotes] = useState<VoteShare>(DEFAULT_MEASURED_VOTES)
   const [voteFactors, setVoteFactors] = useState<Factor[]>(voteGatheringFactors)
   const [seatFactors, setSeatFactors] = useState<Factor[]>(seatConversionFactors)
-  const [activeTab, setActiveTab] = useState<"vote" | "seat">("vote")
   const [showReferences, setShowReferences] = useState(false)
 
   const t = translations[lang]
@@ -957,10 +956,10 @@ export function ParliamentVisualization() {
       {/* Main Grid */}
       <div className="container max-w-6xl mx-auto px-4 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left Column - Parliament & Flow */}
+          {/* Left Column - Parliament (sticky) & Flow */}
           <div className="lg:col-span-3 space-y-6">
             <motion.div
-              className="glass-card p-6"
+              className="glass-card p-6 lg:sticky lg:top-4 lg:z-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -1024,61 +1023,34 @@ export function ParliamentVisualization() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.35 }}
             >
-              {/* Tabs */}
-              <div className="flex mb-6 p-1 rounded-lg bg-secondary">
-                <button
-                  onClick={() => setActiveTab("vote")}
-                  className={`flex-1 text-sm py-2 px-3 rounded-md font-medium transition-all ${
-                    activeTab === "vote"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t.voteGatheringBiases}
-                </button>
-                <button
-                  onClick={() => setActiveTab("seat")}
-                  className={`flex-1 text-sm py-2 px-3 rounded-md font-medium transition-all ${
-                    activeTab === "seat"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t.seatConversionBiases}
-                </button>
-              </div>
+              {/* Vote-gathering biases */}
+              <h3 className="text-base font-semibold mb-1">{t.voteGatheringFactorsTitle}</h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t.voteGatheringFactorsDesc}
+              </p>
+              <BiasControls
+                factors={voteFactors}
+                winner={winner}
+                lang={lang}
+                onToggle={handleVoteFactorToggle}
+                onChange={handleVoteFactorChange}
+              />
 
-              {activeTab === "vote" && (
-                <>
-                  <h3 className="text-base font-semibold mb-1">{t.voteGatheringFactorsTitle}</h3>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {t.voteGatheringFactorsDesc}
-                  </p>
-                  <BiasControls
-                    factors={voteFactors}
-                    winner={winner}
-                    lang={lang}
-                    onToggle={handleVoteFactorToggle}
-                    onChange={handleVoteFactorChange}
-                  />
-                </>
-              )}
+              {/* Divider */}
+              <div className="my-6 border-t border-border" />
 
-              {activeTab === "seat" && (
-                <>
-                  <h3 className="text-base font-semibold mb-1">{t.seatConversionFactorsTitle}</h3>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {t.seatConversionFactorsDesc}
-                  </p>
-                  <BiasControls
-                    factors={seatFactors}
-                    winner={winner}
-                    lang={lang}
-                    onToggle={handleSeatFactorToggle}
-                    onChange={handleSeatFactorChange}
-                  />
-                </>
-              )}
+              {/* Seat-conversion biases */}
+              <h3 className="text-base font-semibold mb-1">{t.seatConversionFactorsTitle}</h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t.seatConversionFactorsDesc}
+              </p>
+              <BiasControls
+                factors={seatFactors}
+                winner={winner}
+                lang={lang}
+                onToggle={handleSeatFactorToggle}
+                onChange={handleSeatFactorChange}
+              />
             </motion.div>
 
             {/* References */}
