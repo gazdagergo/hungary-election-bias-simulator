@@ -62,6 +62,8 @@ const translations = {
     fair: "valós",
     measuredVotesTitle: "Mért szavazatok (közvéleménykutatás)",
     measuredVotesTooltip: "Ez a közvéleménykutatások által mért szavazati arány. Ez már tartalmazza a propaganda és egyéb szavazatszerzési torzítások hatását!",
+    othersNote: "A százalékok nem adnak ki 100%-ot, mert vannak egyéb pártok is, amelyek nem jutnak be a parlamentbe.",
+    voteShare: "szavazat",
     helpsWinner: "Győztest segíti",
     seats: "mandátum",
     headerLabel: "Választási elemzés",
@@ -158,6 +160,8 @@ const translations = {
     fair: "fair",
     measuredVotesTitle: "Measured votes (polls)",
     measuredVotesTooltip: "This is the vote share measured by polls. It already includes the effect of propaganda and other vote-gathering biases!",
+    othersNote: "Percentages don't sum to 100% because there are \"Other\" parties that don't enter parliament.",
+    voteShare: "votes",
     helpsWinner: "Helps winner",
     seats: "seats",
     headerLabel: "Electoral Analysis",
@@ -722,6 +726,10 @@ function FlowDiagram({
       originalTisza: 0,
       originalFidesz: 0,
       originalSmallParty: 0,
+      showVotePercent: true,
+      votePercentTisza: Math.round(seats.tisza / 199 * 100),
+      votePercentFidesz: Math.round(seats.fidesz / 199 * 100),
+      votePercentSmallParty: Math.round(seats.smallParty / 199 * 100),
     },
   ]
 
@@ -766,6 +774,9 @@ function FlowDiagram({
                 {step.showStrikethrough && step.originalTisza !== Math.round(effectiveVotes.tisza) && (
                   <span className="text-xs text-muted-foreground line-through">{step.originalTisza}%</span>
                 )}
+                {step.showVotePercent && (
+                  <span className="text-xs text-muted-foreground">({step.votePercentTisza}%)</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-fidesz" />
@@ -773,12 +784,18 @@ function FlowDiagram({
                 {step.showStrikethrough && step.originalFidesz !== Math.round(effectiveVotes.fidesz) && (
                   <span className="text-xs text-muted-foreground line-through">{step.originalFidesz}%</span>
                 )}
+                {step.showVotePercent && (
+                  <span className="text-xs text-muted-foreground">({step.votePercentFidesz}%)</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-smallParty" />
                 <span className="text-lg font-bold">{step.smallParty}</span>
                 {step.showStrikethrough && step.originalSmallParty !== Math.round(effectiveVotes.smallParty) && (
                   <span className="text-xs text-muted-foreground line-through">{step.originalSmallParty}%</span>
+                )}
+                {step.showVotePercent && (
+                  <span className="text-xs text-muted-foreground">({step.votePercentSmallParty}%)</span>
                 )}
               </div>
             </div>
@@ -815,6 +832,9 @@ function PollSliders({
     { key: "fidesz" as const, name: "Fidesz", color: PARTY_COLORS.fidesz, min: 0, max: 60 },
     { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 5, max: 20 },
   ]
+
+  const total = measuredVotes.tisza + measuredVotes.fidesz + measuredVotes.smallParty
+  const others = 100 - total
 
   return (
     <div className="space-y-6">
@@ -857,6 +877,10 @@ function PollSliders({
           </div>
         </motion.div>
       ))}
+      <div className="text-xs text-muted-foreground pt-2 border-t border-border">
+        <span className="font-medium">{lang === "hu" ? "Egyéb pártok" : "Other parties"}: {others}%</span>
+        <span className="ml-1">– {t.othersNote}</span>
+      </div>
     </div>
   )
 }
