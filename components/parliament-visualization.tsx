@@ -490,15 +490,26 @@ function SeatBar({ seats, t }: { seats: PartySeats; t: typeof translations.hu })
 // Flow diagram component
 function FlowDiagram({
   fairVotes,
+  effectiveVotes,
   measuredVotes,
   seats,
+  hasDisabledVoteBias,
   t
 }: {
   fairVotes: VoteShare
+  effectiveVotes: VoteShare
   measuredVotes: VoteShare
   seats: PartySeats
+  hasDisabledVoteBias: boolean
   t: typeof translations.hu
 }) {
+  // Show strikethrough on middle step when vote biases are disabled and values differ
+  const valuesChanged = hasDisabledVoteBias && (
+    measuredVotes.fidesz !== Math.round(effectiveVotes.fidesz) ||
+    measuredVotes.tisza !== Math.round(effectiveVotes.tisza) ||
+    measuredVotes.mihazank !== Math.round(effectiveVotes.mihazank)
+  )
+
   const steps = [
     {
       icon: Monitor,
@@ -506,13 +517,23 @@ function FlowDiagram({
       tisza: `${Math.round(fairVotes.tisza)}%`,
       fidesz: `${Math.round(fairVotes.fidesz)}%`,
       mihazank: `${Math.round(fairVotes.mihazank)}%`,
+      highlight: false,
+      showStrikethrough: false,
+      originalTisza: 0,
+      originalFidesz: 0,
+      originalMihazank: 0,
     },
     {
       icon: Vote,
-      label: t.measuredVotes,
-      tisza: `${measuredVotes.tisza}%`,
-      fidesz: `${measuredVotes.fidesz}%`,
-      mihazank: `${measuredVotes.mihazank}%`,
+      label: hasDisabledVoteBias ? t.measuredVotes + " *" : t.measuredVotes,
+      tisza: `${Math.round(effectiveVotes.tisza)}%`,
+      fidesz: `${Math.round(effectiveVotes.fidesz)}%`,
+      mihazank: `${Math.round(effectiveVotes.mihazank)}%`,
+      highlight: hasDisabledVoteBias,
+      showStrikethrough: valuesChanged,
+      originalTisza: measuredVotes.tisza,
+      originalFidesz: measuredVotes.fidesz,
+      originalMihazank: measuredVotes.mihazank,
     },
     {
       icon: Landmark,
@@ -520,6 +541,11 @@ function FlowDiagram({
       tisza: `${seats.tisza}`,
       fidesz: `${seats.fidesz}`,
       mihazank: `${seats.mihazank}`,
+      highlight: false,
+      showStrikethrough: false,
+      originalTisza: 0,
+      originalFidesz: 0,
+      originalMihazank: 0,
     },
   ]
 
@@ -540,7 +566,7 @@ function FlowDiagram({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.15 }}
         >
-          <div className="glass-card p-4">
+          <div className={`glass-card p-4 ${step.highlight ? 'ring-1 ring-accent/50' : ''}`}>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
               <step.icon className="w-4 h-4" />
               <span className="font-medium">{step.label}</span>
@@ -549,14 +575,23 @@ function FlowDiagram({
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-tisza" />
                 <span className="text-lg font-bold">{step.tisza}</span>
+                {step.showStrikethrough && step.originalTisza !== Math.round(effectiveVotes.tisza) && (
+                  <span className="text-xs text-muted-foreground line-through">{step.originalTisza}%</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-fidesz" />
                 <span className="text-lg font-bold">{step.fidesz}</span>
+                {step.showStrikethrough && step.originalFidesz !== Math.round(effectiveVotes.fidesz) && (
+                  <span className="text-xs text-muted-foreground line-through">{step.originalFidesz}%</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-mihazank" />
                 <span className="text-lg font-bold">{step.mihazank}</span>
+                {step.showStrikethrough && step.originalMihazank !== Math.round(effectiveVotes.mihazank) && (
+                  <span className="text-xs text-muted-foreground line-through">{step.originalMihazank}%</span>
+                )}
               </div>
             </div>
           </div>
@@ -749,28 +784,52 @@ export function ParliamentVisualization() {
 
   const t = translations[lang]
 
-  // Calculate FAIR votes by REMOVING propaganda effects from measured votes
+  // Calculate FAIR votes (theoretical: what votes would be with ALL biases removed)
+  // This is for display in the flow diagram
   const fairVotes = useMemo((): VoteShare => {
-    let fideszBoost = 0
-    voteFactors.filter(f => f.enabled).forEach(f => {
-      fideszBoost += f.value
+    // Sum ALL vote-gathering biases (regardless of enabled state)
+    let totalBias = 0
+    voteFactors.forEach(f => {
+      totalBias += f.value
     })
 
-    if (fideszBoost === 0) return measuredVotes
+    if (totalBias === 0) return measuredVotes
 
-    const fairFidesz = Math.max(0, measuredVotes.fidesz - fideszBoost)
-    const stolenVotes = measuredVotes.fidesz - fairFidesz
+    const fairFidesz = Math.max(0, measuredVotes.fidesz - totalBias)
+    const redistributed = measuredVotes.fidesz - fairFidesz
     const otherTotal = measuredVotes.tisza + measuredVotes.mihazank
 
     return {
-      tisza: otherTotal > 0 ? measuredVotes.tisza + (stolenVotes * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
+      tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
       fidesz: fairFidesz,
-      mihazank: otherTotal > 0 ? measuredVotes.mihazank + (stolenVotes * measuredVotes.mihazank / otherTotal) : measuredVotes.mihazank,
+      mihazank: otherTotal > 0 ? measuredVotes.mihazank + (redistributed * measuredVotes.mihazank / otherTotal) : measuredVotes.mihazank,
     }
   }, [measuredVotes, voteFactors])
 
-  const anyVoteBiasEnabled = voteFactors.some(f => f.enabled)
-  const effectiveVotes = anyVoteBiasEnabled ? measuredVotes : fairVotes
+  // Calculate EFFECTIVE votes for seat calculation
+  // When biases are ON: we acknowledge they exist, use measured votes (polls as-is)
+  // When biases are OFF: we remove that bias effect, showing theoretical fair scenario
+  const effectiveVotes = useMemo((): VoteShare => {
+    // Calculate how much bias is currently DISABLED (removed from the equation)
+    let removedBias = 0
+    voteFactors.filter(f => !f.enabled).forEach(f => {
+      removedBias += f.value
+    })
+
+    if (removedBias === 0) return measuredVotes // All biases acknowledged, use polls as-is
+
+    // Subtract the disabled biases from Fidesz and redistribute to others
+    const adjustedFidesz = Math.max(0, measuredVotes.fidesz - removedBias)
+    const redistributed = measuredVotes.fidesz - adjustedFidesz
+    const otherTotal = measuredVotes.tisza + measuredVotes.mihazank
+
+    return {
+      tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
+      fidesz: adjustedFidesz,
+      mihazank: otherTotal > 0 ? measuredVotes.mihazank + (redistributed * measuredVotes.mihazank / otherTotal) : measuredVotes.mihazank,
+    }
+  }, [measuredVotes, voteFactors])
+
   const winner: "tisza" | "fidesz" = effectiveVotes.tisza >= effectiveVotes.fidesz ? "tisza" : "fidesz"
 
   const proportionalSeats = useMemo((): PartySeats => {
@@ -908,8 +967,10 @@ export function ParliamentVisualization() {
             >
               <FlowDiagram
                 fairVotes={fairVotes}
+                effectiveVotes={effectiveVotes}
                 measuredVotes={measuredVotes}
                 seats={finalSeats}
+                hasDisabledVoteBias={voteFactors.some(f => !f.enabled)}
                 t={t}
               />
             </motion.div>
