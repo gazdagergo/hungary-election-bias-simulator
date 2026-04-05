@@ -39,7 +39,7 @@
   /* Party colors */
   --tisza: 217 85% 55%;
   --fidesz: 25 95% 55%;
-  --mihazank: 145 55% 42%;
+  --small-party: 220 15% 45%;
   --other: 220 15% 20%;
 
   /* Glass effect */
@@ -98,7 +98,7 @@
   --color-chart-5: hsl(var(--chart-5));
   --color-tisza: hsl(var(--tisza));
   --color-fidesz: hsl(var(--fidesz));
-  --color-mihazank: hsl(var(--mihazank));
+  --color-smallParty: hsl(var(--small-party));
   --color-glass: hsl(var(--glass));
   --color-glass-border: hsl(var(--glass-border));
   --radius-sm: calc(var(--radius) - 4px);
@@ -149,8 +149,8 @@
   .bg-fidesz {
     background-color: hsl(var(--fidesz));
   }
-  .bg-mihazank {
-    background-color: hsl(var(--mihazank));
+  .bg-smallParty {
+    background-color: hsl(var(--small-party));
   }
   .text-tisza {
     color: hsl(var(--tisza));
@@ -158,8 +158,8 @@
   .text-fidesz {
     color: hsl(var(--fidesz));
   }
-  .text-mihazank {
-    color: hsl(var(--mihazank));
+  .text-smallParty {
+    color: hsl(var(--small-party));
   }
 
   /* Text gradient */

@@ -178,7 +178,7 @@ const translations = {
 const PARTY_COLORS = {
   tisza: "hsl(217, 85%, 55%)",
   fidesz: "hsl(25, 95%, 55%)",
-  mihazank: "hsl(145, 55%, 42%)",
+  smallParty: "hsl(220, 15%, 45%)",
   other: "hsl(220, 15%, 20%)",
 }
 
@@ -203,20 +203,20 @@ interface Factor {
 interface PartySeats {
   tisza: number
   fidesz: number
-  mihazank: number
+  smallParty: number
 }
 
 interface VoteShare {
   tisza: number
   fidesz: number
-  mihazank: number
+  smallParty: number
 }
 
 // Default values from taktikaiszavazas.hu polls
 const DEFAULT_MEASURED_VOTES: VoteShare = {
   tisza: 40,
   fidesz: 28,
-  mihazank: 5,
+  smallParty: 5,
 }
 
 // Vote-gathering biases
@@ -409,10 +409,10 @@ function ParliamentChart({ seats }: { seats: PartySeats }) {
     const colors: string[] = []
     for (let i = 0; i < seats.tisza; i++) colors.push(PARTY_COLORS.tisza)
     for (let i = 0; i < seats.fidesz; i++) colors.push(PARTY_COLORS.fidesz)
-    for (let i = 0; i < seats.mihazank; i++) colors.push(PARTY_COLORS.mihazank)
+    for (let i = 0; i < seats.smallParty; i++) colors.push(PARTY_COLORS.smallParty)
     while (colors.length < TOTAL_SEATS) colors.push(PARTY_COLORS.other)
     return colors
-  }, [seats.tisza, seats.fidesz, seats.mihazank])
+  }, [seats.tisza, seats.fidesz, seats.smallParty])
 
   if (!mounted) {
     return <div className="w-full h-[280px]" />
@@ -439,11 +439,12 @@ function ParliamentChart({ seats }: { seats: PartySeats }) {
 }
 
 // Party legend component
-function PartyLegend({ seats }: { seats: PartySeats }) {
+function PartyLegend({ seats, lang }: { seats: PartySeats; lang: Language }) {
+  const smallPartyName = lang === "hu" ? "Kis párt (5%+)" : "Small party (5%+)"
   const parties = [
     { name: "Tisza", seats: seats.tisza, color: "bg-tisza" },
     { name: "Fidesz", seats: seats.fidesz, color: "bg-fidesz" },
-    { name: "Mi Hazánk", seats: seats.mihazank, color: "bg-mihazank" },
+    { name: smallPartyName, seats: seats.smallParty, color: "bg-smallParty" },
   ]
 
   return (
@@ -520,7 +521,7 @@ function FlowDiagram({
   const valuesChanged = hasDisabledVoteBias && (
     measuredVotes.fidesz !== Math.round(effectiveVotes.fidesz) ||
     measuredVotes.tisza !== Math.round(effectiveVotes.tisza) ||
-    measuredVotes.mihazank !== Math.round(effectiveVotes.mihazank)
+    measuredVotes.smallParty !== Math.round(effectiveVotes.smallParty)
   )
 
   const steps = [
@@ -529,36 +530,36 @@ function FlowDiagram({
       label: t.fairPreference,
       tisza: `${Math.round(fairVotes.tisza)}%`,
       fidesz: `${Math.round(fairVotes.fidesz)}%`,
-      mihazank: `${Math.round(fairVotes.mihazank)}%`,
+      smallParty: `${Math.round(fairVotes.smallParty)}%`,
       highlight: false,
       showStrikethrough: false,
       originalTisza: 0,
       originalFidesz: 0,
-      originalMihazank: 0,
+      originalSmallParty: 0,
     },
     {
       icon: Vote,
       label: hasDisabledVoteBias ? t.measuredVotes + " *" : t.measuredVotes,
       tisza: `${Math.round(effectiveVotes.tisza)}%`,
       fidesz: `${Math.round(effectiveVotes.fidesz)}%`,
-      mihazank: `${Math.round(effectiveVotes.mihazank)}%`,
+      smallParty: `${Math.round(effectiveVotes.smallParty)}%`,
       highlight: hasDisabledVoteBias,
       showStrikethrough: valuesChanged,
       originalTisza: measuredVotes.tisza,
       originalFidesz: measuredVotes.fidesz,
-      originalMihazank: measuredVotes.mihazank,
+      originalSmallParty: measuredVotes.smallParty,
     },
     {
       icon: Landmark,
       label: t.finalSeats,
       tisza: `${seats.tisza}`,
       fidesz: `${seats.fidesz}`,
-      mihazank: `${seats.mihazank}`,
+      smallParty: `${seats.smallParty}`,
       highlight: false,
       showStrikethrough: false,
       originalTisza: 0,
       originalFidesz: 0,
-      originalMihazank: 0,
+      originalSmallParty: 0,
     },
   ]
 
@@ -600,10 +601,10 @@ function FlowDiagram({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-mihazank" />
-                <span className="text-lg font-bold">{step.mihazank}</span>
-                {step.showStrikethrough && step.originalMihazank !== Math.round(effectiveVotes.mihazank) && (
-                  <span className="text-xs text-muted-foreground line-through">{step.originalMihazank}%</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-smallParty" />
+                <span className="text-lg font-bold">{step.smallParty}</span>
+                {step.showStrikethrough && step.originalSmallParty !== Math.round(effectiveVotes.smallParty) && (
+                  <span className="text-xs text-muted-foreground line-through">{step.originalSmallParty}%</span>
                 )}
               </div>
             </div>
@@ -625,17 +626,20 @@ function PollSliders({
   measuredVotes,
   fairVotes,
   onChange,
-  t
+  t,
+  lang
 }: {
   measuredVotes: VoteShare
   fairVotes: VoteShare
   onChange: (party: keyof VoteShare, value: number) => void
   t: typeof translations.hu
+  lang: Language
 }) {
+  const smallPartyName = lang === "hu" ? "Kis párt (5%+)" : "Small party (5%+)"
   const parties = [
-    { key: "tisza" as const, name: "Tisza", color: PARTY_COLORS.tisza, max: 60 },
-    { key: "fidesz" as const, name: "Fidesz", color: PARTY_COLORS.fidesz, max: 60 },
-    { key: "mihazank" as const, name: "Mi Hazánk", color: PARTY_COLORS.mihazank, max: 20 },
+    { key: "tisza" as const, name: "Tisza", color: PARTY_COLORS.tisza, min: 0, max: 60 },
+    { key: "fidesz" as const, name: "Fidesz", color: PARTY_COLORS.fidesz, min: 0, max: 60 },
+    { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 5, max: 20 },
   ]
 
   return (
@@ -667,13 +671,13 @@ function PollSliders({
           <div className="relative">
             <input
               type="range"
-              min={0}
+              min={party.min}
               max={party.max}
               value={measuredVotes[party.key]}
               onChange={(e) => onChange(party.key, parseInt(e.target.value))}
               className="w-full h-2 rounded-full appearance-none cursor-pointer"
               style={{
-                background: `linear-gradient(to right, ${party.color} ${(measuredVotes[party.key] / party.max) * 100}%, hsl(220, 15%, 18%) ${(measuredVotes[party.key] / party.max) * 100}%)`,
+                background: `linear-gradient(to right, ${party.color} ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%, hsl(220, 15%, 18%) ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%)`,
               }}
             />
           </div>
@@ -810,12 +814,12 @@ export function ParliamentVisualization() {
 
     const fairFidesz = Math.max(0, measuredVotes.fidesz - totalBias)
     const redistributed = measuredVotes.fidesz - fairFidesz
-    const otherTotal = measuredVotes.tisza + measuredVotes.mihazank
+    const otherTotal = measuredVotes.tisza + measuredVotes.smallParty
 
     return {
       tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
       fidesz: fairFidesz,
-      mihazank: otherTotal > 0 ? measuredVotes.mihazank + (redistributed * measuredVotes.mihazank / otherTotal) : measuredVotes.mihazank,
+      smallParty: otherTotal > 0 ? measuredVotes.smallParty + (redistributed * measuredVotes.smallParty / otherTotal) : measuredVotes.smallParty,
     }
   }, [measuredVotes, voteFactors])
 
@@ -834,25 +838,25 @@ export function ParliamentVisualization() {
     // Subtract the disabled biases from Fidesz and redistribute to others
     const adjustedFidesz = Math.max(0, measuredVotes.fidesz - removedBias)
     const redistributed = measuredVotes.fidesz - adjustedFidesz
-    const otherTotal = measuredVotes.tisza + measuredVotes.mihazank
+    const otherTotal = measuredVotes.tisza + measuredVotes.smallParty
 
     return {
       tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
       fidesz: adjustedFidesz,
-      mihazank: otherTotal > 0 ? measuredVotes.mihazank + (redistributed * measuredVotes.mihazank / otherTotal) : measuredVotes.mihazank,
+      smallParty: otherTotal > 0 ? measuredVotes.smallParty + (redistributed * measuredVotes.smallParty / otherTotal) : measuredVotes.smallParty,
     }
   }, [measuredVotes, voteFactors])
 
   const winner: "tisza" | "fidesz" = effectiveVotes.tisza >= effectiveVotes.fidesz ? "tisza" : "fidesz"
 
   const proportionalSeats = useMemo((): PartySeats => {
-    const total = effectiveVotes.tisza + effectiveVotes.fidesz + effectiveVotes.mihazank
-    if (total === 0) return { tisza: 0, fidesz: 0, mihazank: 0 }
+    const total = effectiveVotes.tisza + effectiveVotes.fidesz + effectiveVotes.smallParty
+    if (total === 0) return { tisza: 0, fidesz: 0, smallParty: 0 }
 
     return {
       tisza: Math.round(TOTAL_SEATS * effectiveVotes.tisza / total),
       fidesz: Math.round(TOTAL_SEATS * effectiveVotes.fidesz / total),
-      mihazank: Math.round(TOTAL_SEATS * effectiveVotes.mihazank / total),
+      smallParty: Math.round(TOTAL_SEATS * effectiveVotes.smallParty / total),
     }
   }, [effectiveVotes])
 
@@ -867,7 +871,7 @@ export function ParliamentVisualization() {
 
     let tisza = proportionalSeats.tisza
     let fidesz = proportionalSeats.fidesz
-    const mihazank = proportionalSeats.mihazank
+    const smallParty = proportionalSeats.smallParty
 
     fidesz += fideszBias
     tisza -= fideszBias
@@ -883,7 +887,7 @@ export function ParliamentVisualization() {
     return {
       tisza: Math.max(0, Math.min(TOTAL_SEATS, tisza)),
       fidesz: Math.max(0, Math.min(TOTAL_SEATS, fidesz)),
-      mihazank: Math.max(0, mihazank),
+      smallParty: Math.max(0, smallParty),
     }
   }, [proportionalSeats, seatFactors, winner])
 
@@ -966,7 +970,7 @@ export function ParliamentVisualization() {
                 <h2 className="text-lg font-semibold">{t.seatDistribution}</h2>
               </div>
               <ParliamentChart seats={finalSeats} />
-              <PartyLegend seats={finalSeats} />
+              <PartyLegend seats={finalSeats} lang={lang} />
               <div className="mt-6">
                 <SeatBar seats={finalSeats} t={t} />
               </div>
@@ -1005,6 +1009,7 @@ export function ParliamentVisualization() {
                 fairVotes={fairVotes}
                 onChange={handlePollChange}
                 t={t}
+                lang={lang}
               />
               {voteFactors.some(f => f.enabled) && (
                 <div className="mt-4 p-3 rounded-lg bg-secondary/50 text-xs text-muted-foreground">
