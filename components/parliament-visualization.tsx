@@ -265,10 +265,10 @@ interface VoteShare {
   smallParty: number
 }
 
-// Default values from taktikaiszavazas.hu polls
+// Default values from Vox Populi (2026.kozvelemeny.org) aggregation
 const DEFAULT_MEASURED_VOTES: VoteShare = {
-  tisza: 40,
-  fidesz: 28,
+  tisza: 48,
+  fidesz: 40,
   smallParty: 5,
 }
 
@@ -826,11 +826,14 @@ function PollSliders({
   t: typeof translations.hu
   lang: Language
 }) {
-  const smallPartyName = lang === "hu" ? "Kis párt (5%+)" : "Small party (5%+)"
+  const smallPartyAboveThreshold = measuredVotes.smallParty >= 5
+  const smallPartyName = lang === "hu"
+    ? (smallPartyAboveThreshold ? "Kis párt (5%+)" : "Kis párt (küszöb alatt)")
+    : (smallPartyAboveThreshold ? "Small party (5%+)" : "Small party (below threshold)")
   const parties = [
     { key: "tisza" as const, name: "Tisza", color: PARTY_COLORS.tisza, min: 0, max: 60 },
     { key: "fidesz" as const, name: "Fidesz", color: PARTY_COLORS.fidesz, min: 0, max: 60 },
-    { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 5, max: 20 },
+    { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 3, max: 20 },
   ]
 
   const total = measuredVotes.tisza + measuredVotes.fidesz + measuredVotes.smallParty
@@ -1077,11 +1080,14 @@ function TourPanel({
 
     // Page 1: Polls
     if (currentPage === 1) {
-      const smallPartyName = lang === "hu" ? "Kis párt (5%+)" : "Small party (5%+)"
+      const smallPartyAboveThreshold = measuredVotes.smallParty >= 5
+      const smallPartyName = lang === "hu"
+        ? (smallPartyAboveThreshold ? "Kis párt (5%+)" : "Kis párt (küszöb alatt)")
+        : (smallPartyAboveThreshold ? "Small party (5%+)" : "Small party (below threshold)")
       const parties = [
         { key: "tisza" as const, name: "Tisza", color: PARTY_COLORS.tisza, min: 0, max: 60 },
         { key: "fidesz" as const, name: "Fidesz", color: PARTY_COLORS.fidesz, min: 0, max: 60 },
-        { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 5, max: 20 },
+        { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 3, max: 20 },
       ]
 
       return (
@@ -1133,7 +1139,52 @@ function TourPanel({
                 className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
               >
                 <p className="font-medium">Taktikai Szavazás</p>
-                <p className="text-xs text-muted-foreground">Közvéleménykutatások összesítése</p>
+                <p className="text-xs text-muted-foreground">{lang === "hu" ? "Közvéleménykutatások összesítése" : "Poll aggregator"}</p>
+              </a>
+              <a
+                href="https://2026.kozvelemeny.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+              >
+                <p className="font-medium">Vox Populi</p>
+                <p className="text-xs text-muted-foreground">{lang === "hu" ? "Közvéleménykutatások aggregátora" : "Poll aggregator"}</p>
+              </a>
+              <a
+                href="https://publicus.hu/blog/partok-tamogatottsaga-2026-marcius/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+              >
+                <p className="font-medium">Publicus</p>
+                <p className="text-xs text-muted-foreground">{lang === "hu" ? "Független közvéleménykutató" : "Independent pollster"}</p>
+              </a>
+              <a
+                href="https://21kutatokozpont.hu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+              >
+                <p className="font-medium">21 Kutatóközpont</p>
+                <p className="text-xs text-muted-foreground">{lang === "hu" ? "Politikai elemzések és közvéleménykutatás" : "Political analysis and polling"}</p>
+              </a>
+              <a
+                href="https://republikon.hu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+              >
+                <p className="font-medium">Republikon Intézet</p>
+                <p className="text-xs text-muted-foreground">{lang === "hu" ? "Független közvéleménykutató" : "Independent pollster"}</p>
+              </a>
+              <a
+                href="https://median.hu/2026/03/27/a-ketharmad-kapujaban-a-tisza-ketparti-parlamentre-van-esely/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg border border-border/50 hover:bg-secondary/50 transition-colors text-sm"
+              >
+                <p className="font-medium">Medián</p>
+                <p className="text-xs text-muted-foreground">{lang === "hu" ? "Független közvéleménykutató (1989 óta)" : "Independent pollster (since 1989)"}</p>
               </a>
             </CollapsibleContent>
           </Collapsible>
@@ -1439,25 +1490,38 @@ export function ParliamentVisualization() {
 
   const winner: "tisza" | "fidesz" = effectiveVotes.tisza >= effectiveVotes.fidesz ? "tisza" : "fidesz"
 
+  // Check if small party passes the 5% parliamentary threshold
+  const smallPartyPassesThreshold = measuredVotes.smallParty >= 5
+
   const proportionalSeats = useMemo((): PartySeats => {
-    const total = effectiveVotes.tisza + effectiveVotes.fidesz + effectiveVotes.smallParty
+    // Hungarian electoral law: parties below 5% threshold get no seats
+    // Their votes are effectively "wasted" and seats are distributed among qualifying parties
+    const qualifyingSmallParty = smallPartyPassesThreshold ? effectiveVotes.smallParty : 0
+    const total = effectiveVotes.tisza + effectiveVotes.fidesz + qualifyingSmallParty
     if (total === 0) return { tisza: 0, fidesz: 0, smallParty: 0 }
 
-    // Use largest remainder method to ensure seats sum to exactly 199
+    // Use largest remainder method (Hare-Niemeyer) to ensure seats sum to exactly 199
+    // Note: Hungary uses D'Hondt for list seats, but for this simplified model we use largest remainder
     const exactTisza = TOTAL_SEATS * effectiveVotes.tisza / total
     const exactFidesz = TOTAL_SEATS * effectiveVotes.fidesz / total
-    const exactSmallParty = TOTAL_SEATS * effectiveVotes.smallParty / total
+    const exactSmallParty = smallPartyPassesThreshold ? TOTAL_SEATS * effectiveVotes.smallParty / total : 0
 
     let tisza = Math.floor(exactTisza)
     let fidesz = Math.floor(exactFidesz)
     let smallParty = Math.floor(exactSmallParty)
 
     // Distribute remaining seats by largest remainder
-    const remainders = [
-      { party: 'tisza', remainder: exactTisza - tisza },
-      { party: 'fidesz', remainder: exactFidesz - fidesz },
-      { party: 'smallParty', remainder: exactSmallParty - smallParty },
-    ].sort((a, b) => b.remainder - a.remainder)
+    const remainders = smallPartyPassesThreshold
+      ? [
+          { party: 'tisza', remainder: exactTisza - tisza },
+          { party: 'fidesz', remainder: exactFidesz - fidesz },
+          { party: 'smallParty', remainder: exactSmallParty - smallParty },
+        ]
+      : [
+          { party: 'tisza', remainder: exactTisza - tisza },
+          { party: 'fidesz', remainder: exactFidesz - fidesz },
+        ]
+    remainders.sort((a, b) => b.remainder - a.remainder)
 
     let remaining = TOTAL_SEATS - (tisza + fidesz + smallParty)
     for (const r of remainders) {
@@ -1469,7 +1533,7 @@ export function ParliamentVisualization() {
     }
 
     return { tisza, fidesz, smallParty }
-  }, [effectiveVotes])
+  }, [effectiveVotes, smallPartyPassesThreshold])
 
   const finalSeats = useMemo((): PartySeats => {
     let fideszBias = 0
