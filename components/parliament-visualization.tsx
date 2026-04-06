@@ -32,7 +32,7 @@ const translations = {
   hu: {
     title: "A magyar választási rendszer",
     titleAccent: "torzításai",
-    subtitle: "Hogyan alakulnak át a szavazatok mandátumokká? Állítsd be a paramétereket és figyeld meg a hatást.",
+    subtitle: "Hogyan lesznek a népszerűségi adatokból mandátumok?",
     seatDistribution: "Mandátumeloszlás",
     majority: "többség",
     twoThirds: "2/3",
@@ -76,13 +76,13 @@ const translations = {
       finish: "Befejezés",
       stepOf: "lépés",
       restartTour: "Túra újraindítása",
-      introTitle: "Üdvözöljük!",
-      introText: "Ez az interaktív eszköz bemutatja, hogyan alakulnak át a szavazatok parlamenti mandátumokká a magyar választási rendszerben, és milyen torzítások befolyásolják ezt a folyamatot.",
-      introDisclaimer: "Fontos: Ez nem egy előrejelzés! A vizualizáció az Ön által megadott preferencia-értékekre és torzítási beállításokra épül (mindenhol megadtunk egy alapbeállítást, amit Ön megváltoztathat). Fedezze fel, hogyan változik a mandátumeloszlás különböző feltételek mellett.",
+      introTitle: "Kinek lejt a pálya?",
+      introText: "Hajlamosak vagyunk a közvélemény-kutatás számait azonossá tenni a parlamentben megszerzett mandátumok arányaival. Ez az interaktív eszköz segít megérteni, hogy miért nincs ez így, hol lejt a pálya és hol súlyoz furcsán a magyar választási rendszer.",
+      introDisclaimer: "Fontos: Az értékek mindenhol módosíthatók, nem kívánunk pontos előrejelzést adni, csupán felhívni a figyelmet a torzító hatások jelenlétére.",
       pollsTitle: "Közvéleménykutatási adatok",
-      pollsText: "Állítsa be a pártok jelenlegi támogatottságát a legfrissebb közvéleménykutatások alapján. Ezek az adatok már tartalmazzák a szavazatszerzési torzítások (propaganda, szavazatvásárlás stb.) hatását.",
-      biasIntro: "A következő lépésekben megismerheti azokat a torzításokat, amelyek befolyásolják a választási eredményeket. Minden torzításnál beállíthatja annak mértékét és ki-/bekapcsolhatja.",
-      adjustableNote: "Az alábbi csúszkával beállíthatja a torzítás becsült mértékét. Az alapértelmezett érték egy becslés – módosíthatja saját kutatása alapján.",
+      pollsText: "Állítsd be a pártok jelenlegi támogatottságát a legfrissebb közvéleménykutatások alapján. Ezek az adatok már tartalmazzák a véleményformáló torzítások (propaganda, szavazatvásárlás stb.) hatását.",
+      biasIntro: "A következő lépésekben megismerheted azokat a torzításokat, amelyek befolyásolják a választási eredményeket. Minden torzításnál beállíthatod annak mértékét és ki-/bekapcsolhatod.",
+      adjustableNote: "Az alábbi csúszkával beállíthatod a torzítás becsült mértékét. Az alapértelmezett érték egy becslés – módosíthatod saját kutatásod alapján.",
     },
     factors: {
       propaganda: {
@@ -174,7 +174,7 @@ const translations = {
       finish: "Finish",
       stepOf: "of",
       restartTour: "Restart tour",
-      introTitle: "Welcome!",
+      introTitle: "The Tilted Playing Field",
       introText: "This interactive tool shows how votes are converted into parliamentary seats in the Hungarian electoral system, and what biases influence this process.",
       introDisclaimer: "Important: This is not a prediction! The visualization reflects your configured preference values and bias settings (default values are provided for all parameters). Explore how seat distribution changes under different conditions.",
       pollsTitle: "Poll data",
@@ -1255,7 +1255,7 @@ function TourPanel({
             {currentFactor.maxValue !== currentFactor.minValue && (
               <div className={`space-y-2 ${!currentFactor.enabled ? "opacity-40" : ""}`}>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{lang === "hu" ? "Hatás mértéke" : "Effect magnitude"}</span>
+                  <span className="text-muted-foreground">{lang === "hu" ? "Hatás becsült mértéke" : "Estimated effect magnitude"}</span>
                   <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
                     +{displayValue}{unit} {beneficiaryName}
                   </span>
