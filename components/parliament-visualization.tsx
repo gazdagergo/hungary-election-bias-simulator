@@ -78,7 +78,15 @@ const translations = {
       restartTour: "Túra újraindítása",
       introTitle: "Kinek lejt a pálya?",
       introText: "Hajlamosak vagyunk a közvélemény-kutatás számait azonossá tenni a parlamentben megszerzett mandátumok arányaival. Ez az interaktív eszköz segít megérteni, hogy miért nincs ez így, hol lejt a pálya és hol súlyoz furcsán a magyar választási rendszer.",
-      introDisclaimer: "Fontos: Az értékek mindenhol módosíthatók, nem kívánunk pontos előrejelzést adni, csupán felhívni a figyelmet a torzító hatások jelenlétére.",
+      howItWorksTitle: "Hogyan működik?",
+      howItWorksText: "Ez az eszköz nem előrejelzés, hanem egy interaktív szimulátor, amely segít megérteni a választási rendszer torzításait.",
+      howItWorksFeatures: [
+        "Beállíthatod a közvéleménykutatási adatokat a legfrissebb mérések alapján",
+        "Minden torzítási tényezőt külön-külön ki- és bekapcsolhatsz",
+        "A csúszkákkal módosíthatod az egyes torzítások becsült mértékét",
+        "Minden torzításhoz forrásokat és hivatkozásokat biztosítunk",
+      ],
+      howItWorksNote: "Az alapértelmezett értékek kutatásokon és becsléseken alapulnak – szabadon módosíthatod őket saját megítélésed szerint.",
       pollsTitle: "Közvéleménykutatási adatok",
       pollsText: "Állítsd be a pártok jelenlegi támogatottságát a legfrissebb közvéleménykutatások alapján. Ezek az adatok már tartalmazzák a véleményformáló torzítások (propaganda, szavazatvásárlás stb.) hatását.",
       biasIntro: "A következő lépésekben megismerheted azokat a torzításokat, amelyek befolyásolják a választási eredményeket. Minden torzításnál beállíthatod annak mértékét és ki-/bekapcsolhatod.",
@@ -110,8 +118,8 @@ const translations = {
         description: "2011-ben egykörös FPTP-rendszerre váltottak. 2014-ben a Fidesz 44%-os listás eredménnyel 91/106 egyéni körzetet nyert (86%). A töredezett ellenzék 35-40%-os Fidesz-győzelmeket eredményezett sok körzetben. Ez megakadályozza az ellenzék taktikai összefogását."
       },
       minorityMp: {
-        name: "Német nemzetiségi képviselő",
-        description: "Ritter Imre, volt fideszes önkormányzati képviselő, a német nemzetiségi lista mandátumát tölti be 2018 óta. Minden parlamenti szavazáson a kormányt támogatja, többször biztosítva a kétharmadot. 2026-ra a német nemzetiség valószínűleg elveszíti a mandátumot a regisztrált szavazók csökkenése miatt."
+        name: "Kisebbségi képviselő",
+        description: "A magyar választási rendszer 13 nemzetiség számára biztosít kedvezményes mandátumot. A nemzetiségi listára szavazók nem szavazhatnak pártlistára. Ha a nemzetiségi lista eléri a pártlistás mandátumhoz szükséges szavazatok 25%-át (~25.000 szavazat), teljes jogú képviselőt küldhet a parlamentbe. 2018–2022-ben a német nemzetiség (Ritter Imre) érte el ezt. 2026-ban a roma nemzetiség várhatóan megszerzi ezt a mandátumot, amely historikusan a kormánypártot támogatja."
       },
       winnerCompensation: {
         name: "Győzteskompenzáció",
@@ -175,10 +183,18 @@ const translations = {
       stepOf: "of",
       restartTour: "Restart tour",
       introTitle: "The Tilted Playing Field",
-      introText: "This interactive tool shows how votes are converted into parliamentary seats in the Hungarian electoral system, and what biases influence this process.",
-      introDisclaimer: "Important: This is not a prediction! The visualization reflects your configured preference values and bias settings (default values are provided for all parameters). Explore how seat distribution changes under different conditions.",
+      introText: "We tend to equate poll numbers with parliamentary seat distributions. This interactive tool helps you understand why that's not the case, and where the Hungarian electoral system tilts the playing field.",
+      howItWorksTitle: "How does it work?",
+      howItWorksText: "This tool is not a prediction, but an interactive simulator that helps you understand electoral system biases.",
+      howItWorksFeatures: [
+        "Set poll data based on the latest measurements",
+        "Toggle each bias factor on or off individually",
+        "Adjust the estimated magnitude of each bias with sliders",
+        "Access sources and references for every bias",
+      ],
+      howItWorksNote: "Default values are based on research and estimates – feel free to modify them according to your own judgment.",
       pollsTitle: "Poll data",
-      pollsText: "Set the current support levels for parties based on the latest polls. These figures already include the effects of vote-gathering biases (propaganda, vote buying, etc.).",
+      pollsText: "Set the current support levels for parties based on the latest polls. These figures already include the effects of opinion-forming biases (propaganda, vote buying, etc.).",
       biasIntro: "In the following steps, you'll learn about the biases that affect electoral outcomes. For each bias, you can adjust its magnitude and toggle it on/off.",
       adjustableNote: "Use the slider below to adjust the estimated magnitude of this bias. The default value is an estimate – feel free to modify it based on your own research.",
     },
@@ -208,8 +224,8 @@ const translations = {
         description: "In 2011, switched to single-round FPTP. In 2014, Fidesz won 91/106 districts (86%) with only 44% list votes. Fragmented opposition led to 35-40% Fidesz wins in many districts. This prevents tactical opposition coordination."
       },
       minorityMp: {
-        name: "German minority MP",
-        description: "Imre Ritter, former Fidesz municipal rep, holds the German minority seat since 2018. Supports the government in every vote, often securing the 2/3 majority. In 2026, the German minority will likely lose the seat due to declining registered voters."
+        name: "Minority MP",
+        description: "Hungary's electoral system provides preferential mandates for 13 recognized minorities. Minority voters cannot vote for party lists. If a minority list reaches 25% of the votes needed for a party list seat (~25,000 votes), it can send a full MP to parliament. In 2018–2022, the German minority (Imre Ritter) achieved this. In 2026, the Roma minority is expected to win this seat, which historically supports the governing party."
       },
       winnerCompensation: {
         name: "Winner compensation",
@@ -437,11 +453,11 @@ const seatConversionFactors: Factor[] = [
       // International reports
       { title: "Hungary 2022: Manipulated Elections - Minority mandates", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
       { title: "How Viktor Orbán Wins", url: "https://www.journalofdemocracy.org/articles/how-viktor-orban-wins/", source: "Journal of Democracy" },
+      { title: "Roma Parliamentary Representation in Hungary", url: "https://www.ecmi.de/infochannel/detail/ecmi-minorities-blog-how-to-lose-the-almost-guaranteed-representation-recent-developments-concerning-roma-parliamentary-representation-in-hungary", source: "ECMI" },
       // Hungarian sources
-      { title: "German Minority Receives Mandate in Parliament", url: "https://hungarytoday.hu/2022-general-parliamentary-elections-hungary-hungarian-parliament-german-minority-imre-ritter/", source: "Hungary Today" },
-      { title: "Imre Ritter - Wikipedia", url: "https://en.wikipedia.org/wiki/Imre_Ritter", source: "Wikipedia" },
       { title: "What Will Happen to the German Mandate?", url: "https://hungarytoday.hu/what-will-happen-to-the-german-mandate/", source: "Hungary Today" },
       { title: "Orbán already secured a mandate in Parliament", url: "https://dailynewshungary.com/orban-already-secured-a-mandate-in-parliament/", source: "Daily News Hungary" },
+      { title: "Only Fidesz – Minority Electoral Law in Hungary", url: "https://verfassungsblog.de/only-fidesz-electoral-law-in-hungary/", source: "Verfassungsblog" },
     ]
   },
   {
@@ -1047,9 +1063,9 @@ function TourPanel({
   const isFirstPage = currentPage === 0
 
   // Calculate which bias we're showing (if any)
-  // Page 0: Intro, Page 1: Polls, Pages 2+: Biases (opinion + vote + seat)
+  // Page 0: Intro, Page 1: How it works, Page 2: Polls, Pages 3+: Biases (opinion + vote + seat)
   const allFactors = [...opinionFactors, ...voteFactors, ...seatFactors]
-  const biasIndex = currentPage - 2
+  const biasIndex = currentPage - 3
   const currentFactor = biasIndex >= 0 ? allFactors[biasIndex] : null
   const isOpinionFactor = currentFactor ? opinionFactors.some(f => f.id === currentFactor.id) : false
   const isVoteFactor = currentFactor ? voteFactors.some(f => f.id === currentFactor.id) : false
@@ -1068,18 +1084,42 @@ function TourPanel({
           <p className="text-muted-foreground leading-relaxed">
             {t.tour.introText}
           </p>
-          <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-            <p className="text-sm text-accent-foreground">
-              <strong>⚠️ {t.tour.introDisclaimer.split(':')[0]}:</strong>
-              {t.tour.introDisclaimer.split(':').slice(1).join(':')}
+        </div>
+      )
+    }
+
+    // Page 1: How it works
+    if (currentPage === 1) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-bold mb-2">{t.tour.howItWorksTitle}</h2>
+            <p className="text-sm text-muted-foreground">{t.tour.howItWorksText}</p>
+          </div>
+
+          <ul className="space-y-3">
+            {t.tour.howItWorksFeatures.map((feature, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-primary">{index + 1}</span>
+                </div>
+                <span className="text-sm text-muted-foreground">{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+            <p className="text-sm text-muted-foreground">
+              <Info className="w-4 h-4 inline mr-2 text-primary" />
+              {t.tour.howItWorksNote}
             </p>
           </div>
         </div>
       )
     }
 
-    // Page 1: Polls
-    if (currentPage === 1) {
+    // Page 2: Polls
+    if (currentPage === 2) {
       const smallPartyAboveThreshold = measuredVotes.smallParty >= 5
       const smallPartyName = lang === "hu"
         ? (smallPartyAboveThreshold ? "Kis párt (5%+)" : "Kis párt (küszöb alatt)")
@@ -1369,8 +1409,8 @@ function TourPanel({
         </AnimatePresence>
       </div>
 
-      {/* Navigation */}
-      <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+      {/* Navigation - sticky on mobile for easy access while scrolling */}
+      <div className="sticky bottom-0 left-0 right-0 mt-4 pt-4 pb-2 border-t border-border flex items-center justify-between bg-card/95 backdrop-blur-sm md:relative md:bg-transparent md:backdrop-blur-none md:mt-6 md:pb-0">
         <button
           onClick={onSkip}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
@@ -1415,8 +1455,8 @@ export function ParliamentVisualization() {
   const [isTourMode, setIsTourMode] = useState(true)
   const [tourPage, setTourPage] = useState(0)
 
-  // Total tour pages: intro + polls + all biases (opinion + vote + seat)
-  const totalTourPages = 2 + opinionFactors.length + voteFactors.length + seatFactors.length
+  // Total tour pages: intro + how it works + polls + all biases (opinion + vote + seat)
+  const totalTourPages = 3 + opinionFactors.length + voteFactors.length + seatFactors.length
 
   const t = translations[lang]
 
