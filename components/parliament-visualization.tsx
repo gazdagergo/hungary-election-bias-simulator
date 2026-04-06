@@ -115,11 +115,11 @@ const translations = {
       },
       winnerCompensation: {
         name: "Győzteskompenzáció",
-        description: "A győztes egyéni jelöltek többletszavazatai átkerülnek a pártlistára – világviszonylatban egyedülálló szabály. 2022-ben ~5 extra mandátumot hozott a Fidesznek. E nélkül sem 2014-ben, sem 2018-ban nem lett volna kétharmad. A mindenkori győztest segíti – ha a Tisza nyer, nekik kedvez!"
+        description: "A győztes egyéni jelöltek többletszavazatai átkerülnek a pártlistára – világviszonylatban egyedülálló szabály. 2022-ben ~5 extra mandátumot hozott a Fidesznek. E nélkül sem 2014-ben, sem 2018-ban nem lett volna kétharmad. A mindenkori győztest segíti – ha a Tisza vezet, nekik kedvez!"
       },
       parliamentSize: {
         name: "Parlament létszámának csökkentése",
-        description: "386-ról 199-re csökkentették a létszámot. A többségi elem aránya 46%-ról 53%-ra nőtt. Ez a 2011-es változás TOVÁBBI torzítást hozott az 1989-es alaprendszerhez képest. A mindenkori győztest segíti – ha a Tisza nyer, nekik is kedvez."
+        description: "386-ról 199-re csökkentették a létszámot. A többségi elem aránya 46%-ról 53%-ra nőtt. Ez a 2011-es változás TOVÁBBI torzítást hozott az 1989-es alaprendszerhez képest. A mindenkori győztest segíti – ha a Tisza vezet, nekik kedvez."
       },
       electoralWeighting: {
         name: "Választási rendszer súlyozása (1989 óta)",
