@@ -21,7 +21,8 @@ import {
   ChevronRight,
   SkipForward,
   Play,
-  RotateCcw
+  RotateCcw,
+  Calculator
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
@@ -39,7 +40,7 @@ const translations = {
     transformationFlow: "Az átalakulás menete",
     fairPreference: "Valós preferencia",
     measuredPreference: "Mért preferencia",
-    measuredPreferenceTooltip: "A közvéleménykutatási adatokat a leadott szavazatokkal azonosnak tekintjük. A preferencia és a tényleges szavazás közötti eltérést (részvételi különbségek, rejtett szavazók, utolsó pillanatban változtatók) nem modellezzük megbízható adatok hiányában.",
+    measuredPreferenceTooltip: "A közvéleménykutatási adatokból kiindulva modellezzük a mandátumeloszlást. A magyar vegyes rendszert szimuláljuk: 106 egyéni körzet (FPTP) + 93 listás hely (D'Hondt). A részvételi különbségeket és egyéb bizonytalanságokat nem modellezzük.",
     finalSeats: "Végső mandátum",
     opinionFormingBiases: "Véleményformáló torzítások",
     voteGatheringBiases: "Külföldi szavazatok",
@@ -87,6 +88,9 @@ const translations = {
         "Minden torzításhoz forrásokat és hivatkozásokat biztosítunk",
       ],
       howItWorksNote: "Az alapértelmezett értékek kutatásokon és becsléseken alapulnak – szabadon módosíthatod őket saját megítélésed szerint.",
+      methodologyTitle: "Számítási módszertan",
+      methodologyText: "A mandátumszámítás a magyar vegyes választási rendszert modellezi: 106 egyéni körzet (FPTP) + 93 listás hely (D'Hondt). A kispártok csak listás mandátumot szerezhetnek. A véleményformáló torzítások (propaganda, szavazatvásárlás) átfedő hatását csökkenő hozadék képlettel számoljuk. Részletes módszertan:",
+      methodologyLink: "taktikaiszavazas.hu/modszertan",
       pollsTitle: "Közvéleménykutatási adatok",
       pollsText: "Állítsd be a pártok jelenlegi támogatottságát a legfrissebb közvéleménykutatások alapján. Ezek az adatok már tartalmazzák a véleményformáló torzítások (propaganda, szavazatvásárlás stb.) hatását.",
       biasIntro: "A következő lépésekben megismerheted azokat a torzításokat, amelyek befolyásolják a választási eredményeket. Minden torzításnál beállíthatod annak mértékét és ki-/bekapcsolhatod.",
@@ -145,7 +149,7 @@ const translations = {
     transformationFlow: "Transformation flow",
     fairPreference: "Fair preference",
     measuredPreference: "Measured preference",
-    measuredPreferenceTooltip: "We treat poll data as equivalent to votes cast. The gap between stated preference and actual voting behavior (turnout differences, shy voters, last-minute changes) is not modeled due to lack of reliable data.",
+    measuredPreferenceTooltip: "We model seat distribution based on poll data. We simulate Hungary's mixed system: 106 SMD seats (FPTP) + 93 list seats (D'Hondt). Turnout differences and other uncertainties are not modeled.",
     finalSeats: "Final seats",
     opinionFormingBiases: "Opinion-forming biases",
     voteGatheringBiases: "Foreign votes",
@@ -193,6 +197,9 @@ const translations = {
         "Access sources and references for every bias",
       ],
       howItWorksNote: "Default values are based on research and estimates – feel free to modify them according to your own judgment.",
+      methodologyTitle: "Calculation methodology",
+      methodologyText: "Seat calculation models Hungary's mixed system: 106 SMD seats (FPTP) + 93 list seats (D'Hondt). Small parties can only win list seats. Overlapping opinion biases (propaganda, vote buying) use diminishing returns formula. Detailed methodology:",
+      methodologyLink: "taktikaiszavazas.hu/modszertan",
       pollsTitle: "Poll data",
       pollsText: "Set the current support levels for parties based on the latest polls. These figures already include the effects of opinion-forming biases (propaganda, vote buying, etc.).",
       biasIntro: "In the following steps, you'll learn about the biases that affect electoral outcomes. For each bias, you can adjust its magnitude and toggle it on/off.",
@@ -252,6 +259,8 @@ const PARTY_COLORS = {
 }
 
 const TOTAL_SEATS = 199
+const SMD_SEATS = 106  // Single-member district seats (winner-take-all)
+const LIST_SEATS = 93  // National list seats (proportional, D'Hondt)
 
 // Factor categories
 type FactorCategory = "opinion-forming" | "vote-gathering" | "seat-conversion"
@@ -1091,16 +1100,16 @@ function TourPanel({
     // Page 1: How it works
     if (currentPage === 1) {
       return (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div>
             <h2 className="text-xl font-bold mb-2">{t.tour.howItWorksTitle}</h2>
             <p className="text-sm text-muted-foreground">{t.tour.howItWorksText}</p>
           </div>
 
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {t.tour.howItWorksFeatures.map((feature, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-xs font-bold text-primary">{index + 1}</span>
                 </div>
                 <span className="text-sm text-muted-foreground">{feature}</span>
@@ -1108,12 +1117,34 @@ function TourPanel({
             ))}
           </ul>
 
-          <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+          <div className="p-3 rounded-lg bg-secondary/50 border border-border">
             <p className="text-sm text-muted-foreground">
               <Info className="w-4 h-4 inline mr-2 text-primary" />
               {t.tour.howItWorksNote}
             </p>
           </div>
+
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Calculator className="w-4 h-4" />
+              <span>{t.tour.methodologyTitle}</span>
+              <ChevronDown className="w-4 h-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <div className="p-3 rounded-lg bg-card border border-border text-sm space-y-2">
+                <p className="text-muted-foreground">{t.tour.methodologyText}</p>
+                <a
+                  href="https://taktikaiszavazas.hu/modszertan"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  {t.tour.methodologyLink}
+                </a>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       )
     }
@@ -1460,14 +1491,22 @@ export function ParliamentVisualization() {
 
   const t = translations[lang]
 
+  // Calculate combined bias using diminishing returns formula
+  // Opinion biases affect overlapping voter populations, so they shouldn't be simply additive
+  // Formula: combined = 1 - (1-a)(1-b)(1-c)... for effects a, b, c as decimals
+  const calculateDiminishingBias = (biasValues: number[]): number => {
+    if (biasValues.length === 0) return 0
+    // Convert percentages to decimals, apply diminishing returns, convert back
+    const product = biasValues.reduce((acc, bias) => acc * (1 - bias / 100), 1)
+    return (1 - product) * 100
+  }
+
   // Calculate FAIR votes (theoretical domestic preference without opinion manipulation)
   // Only removes opinion-forming biases, NOT foreign votes (which are separate from polls)
   const fairVotes = useMemo((): VoteShare => {
-    // Sum ALL opinion-forming biases (propaganda, vote buying)
-    let fideszBias = 0
-    opinionFactors.forEach(f => {
-      fideszBias += f.value
-    })
+    // Use diminishing returns for combined opinion biases
+    const biasValues = opinionFactors.map(f => f.value)
+    const fideszBias = calculateDiminishingBias(biasValues)
 
     if (fideszBias === 0) return measuredVotes
 
@@ -1483,30 +1522,15 @@ export function ParliamentVisualization() {
   }, [measuredVotes, opinionFactors])
 
   // Calculate EFFECTIVE votes for seat calculation
-  // Opinion-forming: polls include these → remove when DISABLED to show fair scenario
-  // Foreign votes: NOT in polls → ADD when ENABLED (slider value matters immediately)
-  // Bidirectional biases: positive = Fidesz advantage, negative = Tisza advantage
+  // Seat calculation uses raw measuredVotes (poll input)
+  // Only foreign votes are added when enabled (these are NOT included in polls)
+  // Opinion biases only affect the "fair preference" display, not seat calculation
   const effectiveVotes = useMemo((): VoteShare => {
     let adjustedFidesz = measuredVotes.fidesz
     let adjustedTisza = measuredVotes.tisza
 
-    // 1. Process opinion-forming factors (remove bias when DISABLED)
-    let fideszOpinionBiasRemoved = 0
-    opinionFactors.filter(f => !f.enabled).forEach(f => {
-      fideszOpinionBiasRemoved += f.value
-    })
-
-    if (fideszOpinionBiasRemoved > 0) {
-      const otherTotal = adjustedTisza + measuredVotes.smallParty
-      const newFidesz = Math.max(0, adjustedFidesz - fideszOpinionBiasRemoved)
-      const redistributed = adjustedFidesz - newFidesz
-      adjustedFidesz = newFidesz
-      if (otherTotal > 0) {
-        adjustedTisza += redistributed * adjustedTisza / otherTotal
-      }
-    }
-
-    // 2. Process foreign votes (ADD when ENABLED - these are not in polls!)
+    // Process foreign votes (ADD when ENABLED - these are not in polls!)
+    // Bidirectional biases: positive = Fidesz advantage, negative = Tisza advantage
     voteFactors.filter(f => f.enabled).forEach(f => {
       if (f.beneficiary === "bidirectional") {
         // Positive = Fidesz, negative = Tisza
@@ -1526,53 +1550,93 @@ export function ParliamentVisualization() {
       fidesz: adjustedFidesz,
       smallParty: measuredVotes.smallParty,
     }
-  }, [measuredVotes, opinionFactors, voteFactors])
+  }, [measuredVotes, voteFactors])
 
   const winner: "tisza" | "fidesz" = effectiveVotes.tisza >= effectiveVotes.fidesz ? "tisza" : "fidesz"
 
   // Check if small party passes the 5% parliamentary threshold
   const smallPartyPassesThreshold = measuredVotes.smallParty >= 5
 
+  // Calculate base seats using proper Hungarian mixed system model
+  // Based on taktikaiszavazas.hu methodology:
+  // - 106 SMD seats: Winner-take-all, small parties get ~0 (can't win plurality)
+  // - 93 list seats: D'Hondt proportional distribution among parties above 5%
+  // - Fidesz has ~1% SMD overperformance vs list votes
   const proportionalSeats = useMemo((): PartySeats => {
-    // Hungarian electoral law: parties below 5% threshold get no seats
-    // Their votes are effectively "wasted" and seats are distributed among qualifying parties
     const qualifyingSmallParty = smallPartyPassesThreshold ? effectiveVotes.smallParty : 0
-    const total = effectiveVotes.tisza + effectiveVotes.fidesz + qualifyingSmallParty
-    if (total === 0) return { tisza: 0, fidesz: 0, smallParty: 0 }
+    const majorPartyTotal = effectiveVotes.tisza + effectiveVotes.fidesz
 
-    // Use largest remainder method (Hare-Niemeyer) to ensure seats sum to exactly 199
-    // Note: Hungary uses D'Hondt for list seats, but for this simplified model we use largest remainder
-    const exactTisza = TOTAL_SEATS * effectiveVotes.tisza / total
-    const exactFidesz = TOTAL_SEATS * effectiveVotes.fidesz / total
-    const exactSmallParty = smallPartyPassesThreshold ? TOTAL_SEATS * effectiveVotes.smallParty / total : 0
+    if (majorPartyTotal === 0) return { tisza: 0, fidesz: 0, smallParty: 0 }
 
-    let tisza = Math.floor(exactTisza)
-    let fidesz = Math.floor(exactFidesz)
-    let smallParty = Math.floor(exactSmallParty)
+    // === SMD SEATS (106) ===
+    // Small parties get 0 SMD seats (they can't win plurality in any district)
+    // Major parties split SMD seats based on relative strength
+    // Historical pattern: ~84/106 rural go to leading party, ~16-18/106 urban more competitive
+    // Fidesz has ~1% structural advantage in SMD vs list performance
 
-    // Distribute remaining seats by largest remainder
-    const remainders = smallPartyPassesThreshold
-      ? [
-          { party: 'tisza', remainder: exactTisza - tisza },
-          { party: 'fidesz', remainder: exactFidesz - fidesz },
-          { party: 'smallParty', remainder: exactSmallParty - smallParty },
-        ]
-      : [
-          { party: 'tisza', remainder: exactTisza - tisza },
-          { party: 'fidesz', remainder: exactFidesz - fidesz },
-        ]
-    remainders.sort((a, b) => b.remainder - a.remainder)
+    const tiszaShare = effectiveVotes.tisza / majorPartyTotal
+    const fideszShare = effectiveVotes.fidesz / majorPartyTotal
 
-    let remaining = TOTAL_SEATS - (tisza + fidesz + smallParty)
-    for (const r of remainders) {
-      if (remaining <= 0) break
-      if (r.party === 'tisza') tisza++
-      else if (r.party === 'fidesz') fidesz++
-      else smallParty++
-      remaining--
+    // SMD bonus for Fidesz (~1% overperformance in SMD)
+    const smdFideszBonus = 0.01
+    const adjustedFideszSmdShare = Math.min(1, fideszShare + smdFideszBonus)
+    const adjustedTiszaSmdShare = 1 - adjustedFideszSmdShare
+
+    // SMD seats are winner-take-all with non-linear scaling
+    // When parties are close, seats split more evenly; when one dominates, they take most
+    // Using sigmoid-like curve to model this
+    const smdDominanceFactor = Math.abs(adjustedFideszSmdShare - adjustedTiszaSmdShare) * 2
+    const smdWinnerBonus = Math.min(0.3, smdDominanceFactor * 0.5) // Up to 30% bonus for dominance
+
+    let smdTisza: number, smdFidesz: number
+    if (adjustedTiszaSmdShare > adjustedFideszSmdShare) {
+      smdTisza = Math.round(SMD_SEATS * (adjustedTiszaSmdShare + smdWinnerBonus))
+      smdFidesz = SMD_SEATS - smdTisza
+    } else {
+      smdFidesz = Math.round(SMD_SEATS * (adjustedFideszSmdShare + smdWinnerBonus))
+      smdTisza = SMD_SEATS - smdFidesz
     }
 
-    return { tisza, fidesz, smallParty }
+    // Clamp to valid range
+    smdTisza = Math.max(0, Math.min(SMD_SEATS, smdTisza))
+    smdFidesz = SMD_SEATS - smdTisza
+
+    // === LIST SEATS (93) ===
+    // Proportional distribution using D'Hondt among parties above 5%
+    // Small parties only get list seats
+
+    // Proper D'Hondt allocation: allocate seats one by one, always giving to highest quotient
+    const dHondtAllocate = (votes: { tisza: number, fidesz: number, smallParty: number }, seats: number) => {
+      const result = { tisza: 0, fidesz: 0, smallParty: 0 }
+
+      for (let i = 0; i < seats; i++) {
+        // Calculate current quotient for each party: votes / (seats_already_won + 1)
+        const quotients = [
+          { party: 'tisza' as const, value: votes.tisza / (result.tisza + 1) },
+          { party: 'fidesz' as const, value: votes.fidesz / (result.fidesz + 1) },
+        ]
+        if (qualifyingSmallParty > 0) {
+          quotients.push({ party: 'smallParty' as const, value: votes.smallParty / (result.smallParty + 1) })
+        }
+
+        // Find party with highest quotient and give them the seat
+        const winner = quotients.reduce((max, curr) => curr.value > max.value ? curr : max)
+        result[winner.party]++
+      }
+
+      return result
+    }
+
+    const listSeats = dHondtAllocate(
+      { tisza: effectiveVotes.tisza, fidesz: effectiveVotes.fidesz, smallParty: qualifyingSmallParty },
+      LIST_SEATS
+    )
+
+    return {
+      tisza: smdTisza + listSeats.tisza,
+      fidesz: smdFidesz + listSeats.fidesz,
+      smallParty: listSeats.smallParty, // Small parties only get list seats
+    }
   }, [effectiveVotes, smallPartyPassesThreshold])
 
   const finalSeats = useMemo((): PartySeats => {
