@@ -291,10 +291,23 @@ interface VoteShare {
 }
 
 // Default values from Vox Populi (2026.kozvelemeny.org) aggregation
+// These are the "measured" poll values (which include opinion bias effects)
 const DEFAULT_MEASURED_VOTES: VoteShare = {
   tisza: 48,
   fidesz: 40,
   smallParty: 5,
+}
+
+// Calculate default fair base by subtracting default enabled biases from Fidesz only
+// Default biases: propaganda=5%, vote-buying=3% → diminishing returns ≈ 7.85%
+// Tisza and smallParty keep their original values (no redistribution)
+const calculateFairBaseFromMeasured = (measured: VoteShare, enabledBias: number): VoteShare => {
+  if (enabledBias === 0) return measured
+  return {
+    tisza: measured.tisza,  // Keep original value, no redistribution
+    fidesz: Math.max(0, measured.fidesz - enabledBias),
+    smallParty: measured.smallParty,
+  }
 }
 
 // Opinion-forming biases (affect domestic voter sentiment, reflected in polls)
@@ -693,23 +706,23 @@ function SeatBar({ seats, t }: { seats: PartySeats; t: typeof translations.hu })
 function FlowDiagram({
   fairVotes,
   effectiveVotes,
-  measuredVotes,
+  displayedVotes,
   seats,
   hasDisabledVoteBias,
   t
 }: {
   fairVotes: VoteShare
   effectiveVotes: VoteShare
-  measuredVotes: VoteShare
+  displayedVotes: VoteShare
   seats: PartySeats
   hasDisabledVoteBias: boolean
   t: typeof translations.hu
 }) {
   // Show strikethrough on middle step when vote biases are disabled and values differ
   const valuesChanged = hasDisabledVoteBias && (
-    measuredVotes.fidesz !== Math.round(effectiveVotes.fidesz) ||
-    measuredVotes.tisza !== Math.round(effectiveVotes.tisza) ||
-    measuredVotes.smallParty !== Math.round(effectiveVotes.smallParty)
+    displayedVotes.fidesz !== Math.round(effectiveVotes.fidesz) ||
+    displayedVotes.tisza !== Math.round(effectiveVotes.tisza) ||
+    displayedVotes.smallParty !== Math.round(effectiveVotes.smallParty)
   )
 
   const steps = [
@@ -735,9 +748,9 @@ function FlowDiagram({
       smallParty: `${Math.round(effectiveVotes.smallParty)}%`,
       highlight: hasDisabledVoteBias,
       showStrikethrough: valuesChanged,
-      originalTisza: measuredVotes.tisza,
-      originalFidesz: measuredVotes.fidesz,
-      originalSmallParty: measuredVotes.smallParty,
+      originalTisza: displayedVotes.tisza,
+      originalFidesz: displayedVotes.fidesz,
+      originalSmallParty: displayedVotes.smallParty,
     },
     {
       icon: Landmark,
@@ -839,19 +852,21 @@ function FlowDiagram({
 
 // Poll sliders component
 function PollSliders({
-  measuredVotes,
+  displayedVotes,
   fairVotes,
+  enabledBias,
   onChange,
   t,
   lang
 }: {
-  measuredVotes: VoteShare
+  displayedVotes: VoteShare
   fairVotes: VoteShare
+  enabledBias: number
   onChange: (party: keyof VoteShare, value: number) => void
   t: typeof translations.hu
   lang: Language
 }) {
-  const smallPartyAboveThreshold = measuredVotes.smallParty >= 5
+  const smallPartyAboveThreshold = displayedVotes.smallParty >= 5
   const smallPartyName = lang === "hu"
     ? (smallPartyAboveThreshold ? "Kis párt (5%+)" : "Kis párt (küszöb alatt)")
     : (smallPartyAboveThreshold ? "Small party (5%+)" : "Small party (below threshold)")
@@ -861,50 +876,69 @@ function PollSliders({
     { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 3, max: 20 },
   ]
 
-  const total = measuredVotes.tisza + measuredVotes.fidesz + measuredVotes.smallParty
+  const total = displayedVotes.tisza + displayedVotes.fidesz + displayedVotes.smallParty
   const others = 100 - total
+
+  // Bias label text
+  const biasLabel = lang === "hu" ? "torzítás" : "bias"
 
   return (
     <div className="space-y-6">
-      {parties.map((party) => (
-        <motion.div
-          key={party.key}
-          className="space-y-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: party.color }}
+      {parties.map((party) => {
+        const displayedValue = Math.round(displayedVotes[party.key])
+        const fairValue = Math.round(fairVotes[party.key])
+        const hasBias = party.key === 'fidesz' && enabledBias > 0
+        const biasAmount = hasBias ? Math.round(enabledBias) : 0
+
+        // Calculate slider fill percentages
+        const fillPercent = ((displayedValue - party.min) / (party.max - party.min)) * 100
+        // For Fidesz with bias: show fair portion in party color, bias portion in accent color
+        const fairFillPercent = hasBias
+          ? ((fairValue - party.min) / (party.max - party.min)) * 100
+          : fillPercent
+
+        return (
+          <motion.div
+            key={party.key}
+            className="space-y-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: party.color }}
+                />
+                <span className="text-sm font-medium">{party.name}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-lg font-bold">{displayedValue}%</span>
+                {hasBias && biasAmount > 0 && (
+                  <span className="text-xs text-accent ml-1.5 font-medium">
+                    (+{biasAmount}% {biasLabel})
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min={party.min}
+                max={party.max}
+                value={displayedValue}
+                onChange={(e) => onChange(party.key, parseInt(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: hasBias
+                    ? `linear-gradient(to right, ${party.color} ${fairFillPercent}%, hsl(var(--accent)) ${fairFillPercent}%, hsl(var(--accent)) ${fillPercent}%, hsl(220, 15%, 18%) ${fillPercent}%)`
+                    : `linear-gradient(to right, ${party.color} ${fillPercent}%, hsl(220, 15%, 18%) ${fillPercent}%)`,
+                }}
               />
-              <span className="text-sm font-medium">{party.name}</span>
             </div>
-            <div className="text-right">
-              <span className="text-lg font-bold">{measuredVotes[party.key]}%</span>
-              {Math.round(fairVotes[party.key]) !== measuredVotes[party.key] && (
-                <span className="text-xs text-accent ml-1.5 font-medium">
-                  ({t.fair}: {Math.round(fairVotes[party.key])}%)
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="relative">
-            <input
-              type="range"
-              min={party.min}
-              max={party.max}
-              value={measuredVotes[party.key]}
-              onChange={(e) => onChange(party.key, parseInt(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, ${party.color} ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%, hsl(220, 15%, 18%) ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%)`,
-              }}
-            />
-          </div>
-        </motion.div>
-      ))}
+          </motion.div>
+        )
+      })}
       <div className="text-xs text-muted-foreground pt-2 border-t border-border">
         <span className="font-medium">{lang === "hu" ? "Egyéb pártok" : "Other parties"}: {others}%</span>
         <span className="ml-1">– {t.othersNote}</span>
@@ -941,7 +975,8 @@ function BiasControls({
           : (isWinnerFactor ? winner : "fidesz")
         const beneficiaryColor = actualBeneficiary === "tisza" ? PARTY_COLORS.tisza : PARTY_COLORS.fidesz
         const beneficiaryName = actualBeneficiary === "tisza" ? "Tisza" : "Fidesz"
-        const unit = factor.category === "vote-gathering" ? "%" : ` ${t.seats}`
+        // Opinion-forming and vote-gathering biases affect vote percentages, seat-conversion affects seats
+        const unit = factor.category === "seat-conversion" ? ` ${t.seats}` : "%"
         const displayValue = isBidirectional ? Math.abs(factor.value) : factor.value
 
         return (
@@ -1032,8 +1067,9 @@ function TourPanel({
   t,
   lang,
   // Content props
-  measuredVotes,
+  displayedVotes,
   fairVotes,
+  enabledBias,
   onPollChange,
   opinionFactors,
   voteFactors,
@@ -1054,8 +1090,9 @@ function TourPanel({
   onFinish: () => void
   t: typeof translations.hu
   lang: Language
-  measuredVotes: VoteShare
+  displayedVotes: VoteShare
   fairVotes: VoteShare
+  enabledBias: number
   onPollChange: (party: keyof VoteShare, value: number) => void
   opinionFactors: Factor[]
   voteFactors: Factor[]
@@ -1151,7 +1188,7 @@ function TourPanel({
 
     // Page 2: Polls
     if (currentPage === 2) {
-      const smallPartyAboveThreshold = measuredVotes.smallParty >= 5
+      const smallPartyAboveThreshold = displayedVotes.smallParty >= 5
       const smallPartyName = lang === "hu"
         ? (smallPartyAboveThreshold ? "Kis párt (5%+)" : "Kis párt (küszöb alatt)")
         : (smallPartyAboveThreshold ? "Small party (5%+)" : "Small party (below threshold)")
@@ -1161,6 +1198,9 @@ function TourPanel({
         { key: "smallParty" as const, name: smallPartyName, color: PARTY_COLORS.smallParty, min: 3, max: 20 },
       ]
 
+      // Bias label text
+      const biasLabel = lang === "hu" ? "torzítás" : "bias"
+
       return (
         <div className="space-y-6">
           <div>
@@ -1169,31 +1209,51 @@ function TourPanel({
           </div>
 
           <div className="space-y-5">
-            {parties.map((party) => (
-              <div key={party.key} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: party.color }}
-                    />
-                    <span className="text-sm font-medium">{party.name}</span>
+            {parties.map((party) => {
+              const displayedValue = Math.round(displayedVotes[party.key])
+              const fairValue = Math.round(fairVotes[party.key])
+              const hasBias = party.key === 'fidesz' && enabledBias > 0
+              const biasAmount = hasBias ? Math.round(enabledBias) : 0
+              const fillPercent = ((displayedValue - party.min) / (party.max - party.min)) * 100
+              const fairFillPercent = hasBias
+                ? ((fairValue - party.min) / (party.max - party.min)) * 100
+                : fillPercent
+
+              return (
+                <div key={party.key} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: party.color }}
+                      />
+                      <span className="text-sm font-medium">{party.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-bold">{displayedValue}%</span>
+                      {hasBias && biasAmount > 0 && (
+                        <span className="text-xs text-accent ml-1.5 font-medium">
+                          (+{biasAmount}% {biasLabel})
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-lg font-bold">{measuredVotes[party.key]}%</span>
+                  <input
+                    type="range"
+                    min={party.min}
+                    max={party.max}
+                    value={displayedValue}
+                    onChange={(e) => onPollChange(party.key, parseInt(e.target.value))}
+                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: hasBias
+                        ? `linear-gradient(to right, ${party.color} ${fairFillPercent}%, hsl(var(--accent)) ${fairFillPercent}%, hsl(var(--accent)) ${fillPercent}%, hsl(220, 15%, 18%) ${fillPercent}%)`
+                        : `linear-gradient(to right, ${party.color} ${fillPercent}%, hsl(220, 15%, 18%) ${fillPercent}%)`,
+                    }}
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={party.min}
-                  max={party.max}
-                  value={measuredVotes[party.key]}
-                  onChange={(e) => onPollChange(party.key, parseInt(e.target.value))}
-                  className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, ${party.color} ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%, hsl(220, 15%, 18%) ${((measuredVotes[party.key] - party.min) / (party.max - party.min)) * 100}%)`,
-                  }}
-                />
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <Collapsible>
@@ -1476,7 +1536,6 @@ function TourPanel({
 // Main component
 export function ParliamentVisualization() {
   const [lang, setLang] = useState<Language>("hu")
-  const [measuredVotes, setMeasuredVotes] = useState<VoteShare>(DEFAULT_MEASURED_VOTES)
   const [opinionFactors, setOpinionFactors] = useState<Factor[]>(opinionFormingFactors)
   const [voteFactors, setVoteFactors] = useState<Factor[]>(voteGatheringFactors)
   const [seatFactors, setSeatFactors] = useState<Factor[]>(seatConversionFactors)
@@ -1494,40 +1553,56 @@ export function ParliamentVisualization() {
   // Calculate combined bias using diminishing returns formula
   // Opinion biases affect overlapping voter populations, so they shouldn't be simply additive
   // Formula: combined = 1 - (1-a)(1-b)(1-c)... for effects a, b, c as decimals
-  const calculateDiminishingBias = (biasValues: number[]): number => {
+  const calculateDiminishingBias = useCallback((biasValues: number[]): number => {
     if (biasValues.length === 0) return 0
     // Convert percentages to decimals, apply diminishing returns, convert back
     const product = biasValues.reduce((acc, bias) => acc * (1 - bias / 100), 1)
     return (1 - product) * 100
-  }
+  }, [])
 
-  // Calculate FAIR votes (theoretical domestic preference without opinion manipulation)
-  // Only removes opinion-forming biases, NOT foreign votes (which are separate from polls)
-  const fairVotes = useMemo((): VoteShare => {
-    // Use diminishing returns for combined opinion biases
-    const biasValues = opinionFactors.map(f => f.value)
-    const fideszBias = calculateDiminishingBias(biasValues)
+  // Calculate enabled bias total (only ENABLED opinion factors)
+  const enabledOpinionBias = useMemo(() => {
+    const enabledValues = opinionFactors.filter(f => f.enabled).map(f => f.value)
+    return calculateDiminishingBias(enabledValues)
+  }, [opinionFactors, calculateDiminishingBias])
 
-    if (fideszBias === 0) return measuredVotes
+  // Calculate total bias (ALL opinion factors, enabled or not)
+  const totalOpinionBias = useMemo(() => {
+    const allValues = opinionFactors.map(f => f.value)
+    return calculateDiminishingBias(allValues)
+  }, [opinionFactors, calculateDiminishingBias])
 
-    const otherTotal = measuredVotes.tisza + measuredVotes.smallParty
-    const fairFidesz = Math.max(0, measuredVotes.fidesz - fideszBias)
-    const redistributed = measuredVotes.fidesz - fairFidesz
+  // Fair base votes: the "true" preference without any opinion bias
+  // This is what we store and modify when user adjusts sliders
+  // Initialize by calculating fair base from default measured votes
+  const [fairBaseVotes, setFairBaseVotes] = useState<VoteShare>(() => {
+    const initialEnabledBias = calculateDiminishingBias(
+      opinionFormingFactors.filter(f => f.enabled).map(f => f.value)
+    )
+    return calculateFairBaseFromMeasured(DEFAULT_MEASURED_VOTES, initialEnabledBias)
+  })
 
+  // Displayed votes (what polls show) = fair base + enabled opinion biases for Fidesz
+  // When biases are toggled, Fidesz displayed value changes automatically
+  // Tisza and smallParty displayed values equal their fair base (no redistribution)
+  const displayedVotes = useMemo((): VoteShare => {
     return {
-      tisza: otherTotal > 0 ? measuredVotes.tisza + (redistributed * measuredVotes.tisza / otherTotal) : measuredVotes.tisza,
-      fidesz: fairFidesz,
-      smallParty: measuredVotes.smallParty,
+      tisza: fairBaseVotes.tisza,
+      fidesz: fairBaseVotes.fidesz + enabledOpinionBias,
+      smallParty: fairBaseVotes.smallParty,
     }
-  }, [measuredVotes, opinionFactors])
+  }, [fairBaseVotes, enabledOpinionBias])
+
+  // Fair votes for display: this is what preference would be without ANY opinion bias
+  // (same as fairBaseVotes, kept for compatibility with existing UI)
+  const fairVotes = fairBaseVotes
 
   // Calculate EFFECTIVE votes for seat calculation
-  // Seat calculation uses raw measuredVotes (poll input)
-  // Only foreign votes are added when enabled (these are NOT included in polls)
-  // Opinion biases only affect the "fair preference" display, not seat calculation
+  // Uses displayedVotes (poll values with enabled opinion biases)
+  // Plus foreign votes when enabled (these are NOT included in polls)
   const effectiveVotes = useMemo((): VoteShare => {
-    let adjustedFidesz = measuredVotes.fidesz
-    let adjustedTisza = measuredVotes.tisza
+    let adjustedFidesz = displayedVotes.fidesz
+    let adjustedTisza = displayedVotes.tisza
 
     // Process foreign votes (ADD when ENABLED - these are not in polls!)
     // Bidirectional biases: positive = Fidesz advantage, negative = Tisza advantage
@@ -1548,14 +1623,14 @@ export function ParliamentVisualization() {
     return {
       tisza: adjustedTisza,
       fidesz: adjustedFidesz,
-      smallParty: measuredVotes.smallParty,
+      smallParty: displayedVotes.smallParty,
     }
-  }, [measuredVotes, voteFactors])
+  }, [displayedVotes, voteFactors])
 
   const winner: "tisza" | "fidesz" = effectiveVotes.tisza >= effectiveVotes.fidesz ? "tisza" : "fidesz"
 
   // Check if small party passes the 5% parliamentary threshold
-  const smallPartyPassesThreshold = measuredVotes.smallParty >= 5
+  const smallPartyPassesThreshold = displayedVotes.smallParty >= 5
 
   // Calculate base seats using proper Hungarian mixed system model
   // Based on taktikaiszavazas.hu methodology:
@@ -1685,9 +1760,18 @@ export function ParliamentVisualization() {
     return { tisza, fidesz, smallParty }
   }, [proportionalSeats, seatFactors, winner])
 
+  // When user changes poll slider, update fairBaseVotes
+  // For Fidesz: displayed = fairBase + enabledBias, so fairBase = displayed - enabledBias
+  // For others: fairBase = displayed directly
   const handlePollChange = useCallback((party: keyof VoteShare, value: number) => {
-    setMeasuredVotes(prev => ({ ...prev, [party]: value }))
-  }, [])
+    if (party === 'fidesz') {
+      // Fidesz slider shows displayed (biased) value, so we need to back-calculate fair base
+      setFairBaseVotes(prev => ({ ...prev, fidesz: value - enabledOpinionBias }))
+    } else {
+      // Tisza and smallParty: fair base equals displayed value
+      setFairBaseVotes(prev => ({ ...prev, [party]: value }))
+    }
+  }, [enabledOpinionBias])
 
   const handleOpinionFactorToggle = useCallback((id: string) => {
     setOpinionFactors(prev => prev.map(f => f.id === id ? { ...f, enabled: !f.enabled } : f))
@@ -1795,8 +1879,9 @@ export function ParliamentVisualization() {
                   onFinish={handleTourFinish}
                   t={t}
                   lang={lang}
-                  measuredVotes={measuredVotes}
+                  displayedVotes={displayedVotes}
                   fairVotes={fairVotes}
+                  enabledBias={enabledOpinionBias}
                   onPollChange={handlePollChange}
                   opinionFactors={opinionFactors}
                   voteFactors={voteFactors}
@@ -1864,7 +1949,7 @@ export function ParliamentVisualization() {
                   <FlowDiagram
                     fairVotes={fairVotes}
                     effectiveVotes={effectiveVotes}
-                    measuredVotes={measuredVotes}
+                    displayedVotes={displayedVotes}
                     seats={finalSeats}
                     hasDisabledVoteBias={opinionFactors.some(f => !f.enabled) || voteFactors.some(f => !f.enabled)}
                     t={t}
@@ -1885,8 +1970,9 @@ export function ParliamentVisualization() {
                 {t.measuredPreferenceTitle}
               </h2>
               <PollSliders
-                measuredVotes={measuredVotes}
+                displayedVotes={displayedVotes}
                 fairVotes={fairVotes}
+                enabledBias={enabledOpinionBias}
                 onChange={handlePollChange}
                 t={t}
                 lang={lang}
