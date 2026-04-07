@@ -67,7 +67,7 @@ const translations = {
     voteShare: "szavazat",
     helpsWinner: "Győztest segíti",
     seats: "mandátum",
-    headerLabel: "Választási elemzés",
+    headerLabel: "lejtapalya.hu",
     // Tour translations
     tour: {
       next: "Következő",
@@ -176,7 +176,7 @@ const translations = {
     voteShare: "votes",
     helpsWinner: "Helps winner",
     seats: "seats",
-    headerLabel: "Electoral Analysis",
+    headerLabel: "lejtapalya.hu",
     // Tour translations
     tour: {
       next: "Next",
@@ -1086,7 +1086,7 @@ function TourPanel({
         <div className="space-y-6">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-              <Landmark className="w-8 h-8 text-primary" />
+              <Landmark className="w-8 h-8 text-primary" style={{ transform: 'rotate(-12deg)' }} />
             </div>
             <h2 className="text-2xl font-bold">{t.tour.introTitle}</h2>
           </div>
@@ -1749,7 +1749,7 @@ export function ParliamentVisualization() {
       <header className="border-b border-border">
         <div className="container max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Landmark className="w-5 h-5" />
+            <Landmark className="w-5 h-5" style={{ transform: 'rotate(-12deg)' }} />
             <span className="text-xs font-semibold uppercase tracking-widest">{t.headerLabel}</span>
           </div>
           <button
