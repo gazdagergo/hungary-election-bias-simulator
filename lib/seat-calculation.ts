@@ -1,12 +1,17 @@
 /**
  * Hungarian Electoral System Seat Calculation
  *
- * Based on the Hungarian mixed electoral system:
+ * Simplified model inspired by taktikaiszavazas.hu methodology.
+ * Models Hungary's mixed electoral system:
  * - 106 Single-Member District (SMD) seats: Winner-take-all
  * - 93 National List seats: D'Hondt proportional distribution
  * - 5% parliamentary threshold for parties
+ * - Fidesz ~1% structural SMD advantage
+ * - Non-linear winner bonus for SMD seats
  *
- * Reference: taktikaiszavazas.hu methodology
+ * Note: This is a simplified model for understanding biases.
+ * taktikaiszavazas.hu uses district-level data and turnout modeling
+ * for more precise forecasting.
  */
 
 export const TOTAL_SEATS = 199
