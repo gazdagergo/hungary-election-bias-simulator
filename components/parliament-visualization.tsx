@@ -25,6 +25,7 @@ import {
   Calculator
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 // Translations
 type Language = "hu" | "en"
@@ -137,6 +138,35 @@ const translations = {
         name: "Választási rendszer súlyozása (1989 óta)",
         description: "A magyar vegyes rendszer ALAP győztes-torzítása – ez nem Fidesz-találmány, 1989 óta létezik. A többségi elem természeténél fogva a győztest segíti. A 2011-es méretcsökkentés hatása ezen FELÜL jelentkezik."
       }
+    },
+    legal: {
+      operator: "Üzemeltető",
+      operatorName: "Gazda Gergely",
+      operatorEmail: "gergo@lejtapalya.hu",
+      privacyPolicy: "Adatvédelmi tájékoztató",
+      cookiePolicy: "Cookie (süti) tájékoztató",
+      privacyTitle: "Adatvédelmi tájékoztató",
+      privacyContent: `A lejtapalya.hu weboldal üzemeltetője Gazda Gergely (gergo@lejtapalya.hu).
+
+Ez az oldal NEM gyűjt személyes adatokat. Nem használunk Google Analytics-et vagy más nyomkövető szolgáltatást.
+
+A weboldalt a Vercel Inc. (San Francisco, USA) szerverein tároljuk. A Vercel automatikusan rögzíthet technikai adatokat (IP-cím, böngésző típusa) a szolgáltatás működtetéséhez, de ezeket nem adjuk át harmadik félnek marketing célokra.
+
+Kapcsolat: gergo@lejtapalya.hu`,
+      cookieTitle: "Cookie (süti) tájékoztató",
+      cookieContent: `A lejtapalya.hu weboldal minimális cookie-kat használ.
+
+Használt cookie-k:
+• Technikai cookie-k: A Vercel tárhelyszolgáltató által használt, a weboldal működéséhez szükséges cookie-k. Ezek nem gyűjtenek személyes adatokat.
+
+NEM használunk:
+• Marketing cookie-kat
+• Google Analytics-et
+• Közösségi média követőket
+• Harmadik féltől származó reklám cookie-kat
+
+A böngésző beállításaiban letilthatod a cookie-kat, de ez befolyásolhatja az oldal működését.`,
+      close: "Bezárás"
     }
   },
   en: {
@@ -246,6 +276,35 @@ const translations = {
         name: "Electoral system weighting (since 1989)",
         description: "The Hungarian mixed system's BASELINE winner-bias – not a Fidesz invention, exists since 1989. The majoritarian element naturally favors the winner. The 2011 size reduction effect applies ON TOP of this."
       }
+    },
+    legal: {
+      operator: "Operator",
+      operatorName: "Gergely Gazda",
+      operatorEmail: "gergo@lejtapalya.hu",
+      privacyPolicy: "Privacy Policy",
+      cookiePolicy: "Cookie Policy",
+      privacyTitle: "Privacy Policy",
+      privacyContent: `The lejtapalya.hu website is operated by Gergely Gazda (gergo@lejtapalya.hu).
+
+This website does NOT collect personal data. We do not use Google Analytics or any other tracking service.
+
+The website is hosted on Vercel Inc. (San Francisco, USA) servers. Vercel may automatically log technical data (IP address, browser type) for service operation, but we do not share this with third parties for marketing purposes.
+
+Contact: gergo@lejtapalya.hu`,
+      cookieTitle: "Cookie Policy",
+      cookieContent: `The lejtapalya.hu website uses minimal cookies.
+
+Cookies used:
+• Technical cookies: Used by Vercel hosting provider, necessary for website operation. These do not collect personal data.
+
+We do NOT use:
+• Marketing cookies
+• Google Analytics
+• Social media trackers
+• Third-party advertising cookies
+
+You can disable cookies in your browser settings, but this may affect website functionality.`,
+      close: "Close"
     }
   }
 }
@@ -2084,6 +2143,50 @@ export function ParliamentVisualization() {
         </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border mt-12">
+        <div className="container max-w-6xl mx-auto px-4 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <span>{t.legal.operator}:</span>
+              <span className="font-medium">{t.legal.operatorName}</span>
+              <span>·</span>
+              <a href={`mailto:${t.legal.operatorEmail}`} className="hover:text-foreground transition-colors">
+                {t.legal.operatorEmail}
+              </a>
+            </div>
+            <div className="flex items-center gap-4">
+              <Dialog>
+                <DialogTrigger className="hover:text-foreground transition-colors">
+                  {t.legal.privacyPolicy}
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>{t.legal.privacyTitle}</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-sm text-muted-foreground whitespace-pre-line">
+                    {t.legal.privacyContent}
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger className="hover:text-foreground transition-colors">
+                  {t.legal.cookiePolicy}
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>{t.legal.cookieTitle}</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-sm text-muted-foreground whitespace-pre-line">
+                    {t.legal.cookieContent}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
