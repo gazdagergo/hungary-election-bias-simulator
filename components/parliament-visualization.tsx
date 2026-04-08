@@ -121,7 +121,7 @@ const translations = {
       },
       minorityMp: {
         name: "Kisebbségi képviselő",
-        description: "A magyar választási rendszer 13 nemzetiség számára biztosít kedvezményes mandátumot. A nemzetiségi listára szavazók nem szavazhatnak pártlistára. Ha a nemzetiségi lista eléri a pártlistás mandátumhoz szükséges szavazatok 25%-át (~25.000 szavazat), teljes jogú képviselőt küldhet a parlamentbe. 2018–2022-ben a német nemzetiség (Ritter Imre) érte el ezt. 2026-ban a roma nemzetiség várhatóan megszerzi ezt a mandátumot, amely historikusan a kormánypártot támogatja."
+        description: "A magyar választási rendszer 13 nemzetiség számára biztosít kedvezményes mandátumot. A nemzetiségi listára szavazók nem szavazhatnak pártlistára. Ha a nemzetiségi lista eléri a pártlistás mandátumhoz szükséges szavazatok 25%-át (~25.000 szavazat), teljes jogú képviselőt küldhet a parlamentbe. 2018–2022-ben a német nemzetiség képviselője (Ritter Imre) következetesen a kormánypárttal szavazott. A csúszka mindkét irányba állítható az új képviselő várható szavazási mintája alapján."
       },
       winnerCompensation: {
         name: "Győzteskompenzáció",
@@ -256,7 +256,7 @@ A böngésző beállításaiban letilthatod a cookie-kat, de ez befolyásolhatja
       },
       minorityMp: {
         name: "Minority MP",
-        description: "Hungary's electoral system provides preferential mandates for 13 recognized minorities. Minority voters cannot vote for party lists. If a minority list reaches 25% of the votes needed for a party list seat (~25,000 votes), it can send a full MP to parliament. In 2018–2022, the German minority (Imre Ritter) achieved this. In 2026, the Roma minority is expected to win this seat, which historically supports the governing party."
+        description: "Hungary's electoral system provides preferential mandates for 13 recognized minorities. Minority voters cannot vote for party lists. If a minority list reaches 25% of the votes needed for a party list seat (~25,000 votes), it can send a full MP to parliament. In 2018–2022, the German minority representative (Imre Ritter) consistently voted with the governing party. The slider can be set either way based on the expected voting pattern of the new representative."
       },
       winnerCompensation: {
         name: "Winner compensation",
@@ -500,9 +500,9 @@ const seatConversionFactors: Factor[] = [
     enabled: true,
     value: 1,
     maxValue: 1,
-    minValue: 1,
+    minValue: -1,
     category: "seat-conversion",
-    beneficiary: "fidesz",
+    beneficiary: "bidirectional",
     references: [
       // International reports
       { title: "Hungary 2022: Manipulated Elections - Minority mandates", url: "https://democracyinstitute.ceu.edu/sites/default/files/article/attachment/2022-03/Hungary%202022%20Manipulated%20Elections.pdf", source: "CEU Democracy Institute" },
@@ -1065,9 +1065,13 @@ function BiasControls({
                   />
                 </div>
               </div>
-              <span className="text-xs font-semibold" style={{ color: beneficiaryColor }}>
-                +{displayValue}{unit} {beneficiaryName}
-              </span>
+              {factor.value === 0 ? (
+                <span className="text-xs font-semibold text-muted-foreground">0{unit}</span>
+              ) : (
+                <span className="text-xs font-semibold" style={{ color: beneficiaryColor }}>
+                  +{displayValue}{unit} {beneficiaryName}
+                </span>
+              )}
             </div>
             {factor.enabled && factor.maxValue !== factor.minValue && (
               <div className="mt-3">
@@ -1419,9 +1423,13 @@ function TourPanel({
               <div className={`space-y-2 ${!currentFactor.enabled ? "opacity-40" : ""}`}>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{lang === "hu" ? "Hatás becsült mértéke" : "Estimated effect magnitude"}</span>
-                  <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
-                    +{displayValue}{unit} {beneficiaryName}
-                  </span>
+                  {currentFactor.value === 0 ? (
+                    <span className="font-semibold text-muted-foreground">0{unit}</span>
+                  ) : (
+                    <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
+                      +{displayValue}{unit} {beneficiaryName}
+                    </span>
+                  )}
                 </div>
                 <Slider
                   value={[currentFactor.value]}
@@ -1438,9 +1446,13 @@ function TourPanel({
             {currentFactor.maxValue === currentFactor.minValue && (
               <div className={`text-sm ${!currentFactor.enabled ? "opacity-40" : ""}`}>
                 <span className="text-muted-foreground">{lang === "hu" ? "Fix hatás:" : "Fixed effect:"} </span>
-                <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
-                  +{displayValue}{unit} {beneficiaryName}
-                </span>
+                {currentFactor.value === 0 ? (
+                  <span className="font-semibold text-muted-foreground">0{unit}</span>
+                ) : (
+                  <span className="font-semibold" style={{ color: currentFactor.enabled ? beneficiaryColor : undefined }}>
+                    +{displayValue}{unit} {beneficiaryName}
+                  </span>
+                )}
               </div>
             )}
           </div>
