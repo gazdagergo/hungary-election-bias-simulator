@@ -282,9 +282,16 @@ With Tisza leading by 7 points:
 
 ## References
 
-- [Hungarian Electoral Law](https://njt.hu/jogszabaly/2011-203-00-00)
+### Electoral System
+- [Hungarian Electoral Law (2011/CCIII)](https://njt.hu/jogszabaly/2011-203-00-00)
 - [taktikaiszavazas.hu Methodology](https://taktikaiszavazas.hu/modszertan)
 - [D'Hondt Method (Wikipedia)](https://en.wikipedia.org/wiki/D%27Hondt_method)
+
+### Academic Sources
+- CEU Democracy Institute studies on Hungarian elections
+- OSCE/ODIHR election observation reports
+- Politikatudományi Szemle (Hungarian Political Science Review)
+- Public Choice academic journal (Springer)
 
 ## Code Files
 
