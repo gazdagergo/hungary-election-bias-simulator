@@ -10,9 +10,24 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: "Parlament | Magyar választási rendszer torzításai",
+  title: "lejtapalya.hu | A magyar választási rendszer torzításai",
   description:
-    "Interaktív vizualizáció a magyar választási rendszer torzításairól és azok hatásairól a parlamenti mandátumok elosztására.",
+    "Interaktív szimulátor a magyar választási rendszer torzításairól. Hogyan lesznek a közvéleménykutatási adatokból parlamenti mandátumok? Hol lejt a pálya?",
+  metadataBase: new URL('https://lejtapalya.hu'),
+  openGraph: {
+    title: "lejtapalya.hu | A magyar választási rendszer torzításai",
+    description: "Interaktív szimulátor: hogyan lesznek a közvéleménykutatási adatokból mandátumok? Hol lejt a pálya a magyar választási rendszerben?",
+    url: 'https://lejtapalya.hu',
+    siteName: 'lejtapalya.hu',
+    locale: 'hu_HU',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "lejtapalya.hu | A magyar választási rendszer torzításai",
+    description: "Interaktív szimulátor: hogyan lesznek a közvéleménykutatási adatokból mandátumok?",
+  },
+  keywords: ['választás', 'Magyarország', 'parlament', 'mandátum', 'torzítás', 'Fidesz', 'Tisza', 'közvéleménykutatás', 'szimulátor'],
 }
 
 export default function RootLayout({
