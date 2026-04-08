@@ -22,7 +22,8 @@ import {
   SkipForward,
   Play,
   RotateCcw,
-  Calculator
+  Calculator,
+  Github
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -166,7 +167,8 @@ NEM használunk:
 • Harmadik féltől származó reklám cookie-kat
 
 A böngésző beállításaiban letilthatod a cookie-kat, de ez befolyásolhatja az oldal működését.`,
-      close: "Bezárás"
+      close: "Bezárás",
+      sourceCode: "Forráskód"
     }
   },
   en: {
@@ -304,7 +306,8 @@ We do NOT use:
 • Third-party advertising cookies
 
 You can disable cookies in your browser settings, but this may affect website functionality.`,
-      close: "Close"
+      close: "Close",
+      sourceCode: "Source Code"
     }
   }
 }
@@ -2157,6 +2160,15 @@ export function ParliamentVisualization() {
               </a>
             </div>
             <div className="flex items-center gap-4">
+              <a
+                href="https://github.com/gazdagergo/hungary-election-bias-simulator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                <Github className="h-3.5 w-3.5" />
+                {t.legal.sourceCode}
+              </a>
               <Dialog>
                 <DialogTrigger className="hover:text-foreground transition-colors">
                   {t.legal.privacyPolicy}
