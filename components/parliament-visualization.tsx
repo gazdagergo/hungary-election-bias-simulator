@@ -82,7 +82,7 @@ const translations = {
       introTitle: "Kinek lejt a pálya?",
       introText: "Hajlamosak vagyunk a közvélemény-kutatás számait azonossá tenni a parlamentben megszerzett mandátumok arányaival. Ez az interaktív eszköz segít megérteni, hogy miért nincs ez így, hol lejt a pálya és hol súlyoz furcsán a magyar választási rendszer.",
       contextTitle: "A lejtős pálya története",
-      contextText: "A magyar választási rendszer 1989 óta nem arányos, a győztest segíti. A Fidesz 2010-es hatalomra kerülése óta azonban szisztematikusan törekedett arra, hogy a rendszer még inkább neki kedvezzen. Az állami propagandától kezdve a visszaélésekre lehetőséget adó levélszavazatokon át a kétfordulós szavazás eltörléséig – mind tudatos, a választási eredményt befolyásoló lépésként értékelhetőek. Ez az alkalmazás nem törekszik pontos választási előrejelzésre, csupán megmutatja, nagyjából hogyan adódnak össze ezek a hatások, hogyan lejt a pálya – de az is kirajzolódik, hogy bizonyos elemek hogyan üthetnek vissza egy erős ellenzéki párt megjelenésével.",
+      contextText: "A magyar választási rendszer 1989 óta nem arányos, a győztest segíti. A Fidesz 2010-es hatalomra kerülése óta azonban szisztematikusan törekedett arra, hogy a rendszer még inkább neki kedvezzen. Az állami propagandától kezdve a visszaélésekre lehetőséget adó levélszavazatokon át a kétfordulós szavazás eltörléséig – mind tudatos, a választási eredményt befolyásoló lépésként értékelhetőek.\n\nEz az alkalmazás nem törekszik pontos választási előrejelzésre, csupán megmutatja, nagyjából hogyan adódnak össze ezek a hatások, hogyan lejt a pálya – de az is kirajzolódik, hogy bizonyos elemek hogyan üthetnek vissza egy erős ellenzéki párt megjelenésével.",
       howItWorksTitle: "Hogyan működik?",
       howItWorksText: "Ez az eszköz nem előrejelzés, hanem egy interaktív szimulátor, amely segít megérteni a választási rendszer torzításait.",
       howItWorksFeatures: [
@@ -219,7 +219,7 @@ A böngésző beállításaiban letilthatod a cookie-kat, de ez befolyásolhatja
       introTitle: "The Tilted Playing Field",
       introText: "We tend to equate poll numbers with parliamentary seat distributions. This interactive tool helps you understand why that's not the case, and where the Hungarian electoral system tilts the playing field.",
       contextTitle: "The History of the Tilted Field",
-      contextText: "Hungary's electoral system has been non-proportional since 1989, favoring whoever wins. However, since coming to power in 2010, Fidesz has systematically worked to tilt the system further in its favor. From state propaganda, through mail voting that allows for abuse, to abolishing two-round voting – all can be seen as deliberate steps to influence electoral outcomes. This application does not aim to provide precise electoral forecasts; it simply shows how these effects roughly add up, how the playing field is tilted – but it also reveals how certain elements may now backfire with the emergence of a strong opposition party.",
+      contextText: "Hungary's electoral system has been non-proportional since 1989, favoring whoever wins. However, since coming to power in 2010, Fidesz has systematically worked to tilt the system further in its favor. From state propaganda, through mail voting that allows for abuse, to abolishing two-round voting – all can be seen as deliberate steps to influence electoral outcomes.\n\nThis application does not aim to provide precise electoral forecasts; it simply shows how these effects roughly add up, how the playing field is tilted – but it also reveals how certain elements may now backfire with the emergence of a strong opposition party.",
       howItWorksTitle: "How does it work?",
       howItWorksText: "This tool is not a prediction, but an interactive simulator that helps you understand electoral system biases.",
       howItWorksFeatures: [
@@ -1181,7 +1181,7 @@ function TourPanel({
           <div>
             <h2 className="text-xl font-bold mb-2">{t.tour.contextTitle}</h2>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
             {t.tour.contextText}
           </p>
         </div>
