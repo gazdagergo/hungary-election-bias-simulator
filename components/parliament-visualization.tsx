@@ -726,6 +726,9 @@ function SeatBar({ seats, t }: { seats: PartySeats; t: typeof translations.hu })
       </div>
       <div className="relative flex text-[10px] text-muted-foreground font-medium">
         <span>0</span>
+        <span className="absolute" style={{ left: `${((TOTAL_SEATS - twoThirds) / TOTAL_SEATS) * 100}%`, transform: "translateX(-50%)" }}>
+          {twoThirds} ({t.twoThirds})
+        </span>
         <span className="absolute" style={{ left: `${(majority / TOTAL_SEATS) * 100}%`, transform: "translateX(-50%)" }}>
           {majority} ({t.majority})
         </span>
