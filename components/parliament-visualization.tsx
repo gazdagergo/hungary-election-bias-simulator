@@ -334,6 +334,7 @@ interface Factor {
   category: FactorCategory
   beneficiary: Beneficiary
   references: { title: string; url: string; source: string }[]
+  isElectoralSystemBias?: boolean // If true, controls SMD winner bonus instead of seat transfer
 }
 
 interface PartySeats {
@@ -458,7 +459,7 @@ const seatConversionFactors: Factor[] = [
     id: "gerrymandering",
     nameKey: "gerrymandering",
     enabled: true,
-    value: 6,
+    value: 5,
     maxValue: 12,
     minValue: 2,
     category: "seat-conversion",
@@ -522,7 +523,7 @@ const seatConversionFactors: Factor[] = [
     id: "winner-compensation",
     nameKey: "winnerCompensation",
     enabled: true,
-    value: 5,
+    value: 2,
     maxValue: 10,
     minValue: 2,
     category: "seat-conversion",
@@ -544,7 +545,7 @@ const seatConversionFactors: Factor[] = [
     id: "parliament-size",
     nameKey: "parliamentSize",
     enabled: true,
-    value: 3,
+    value: 1,
     maxValue: 6,
     minValue: 1,
     category: "seat-conversion",
@@ -559,11 +560,12 @@ const seatConversionFactors: Factor[] = [
     id: "electoral-weighting",
     nameKey: "electoralWeighting",
     enabled: true,
-    value: 8,
-    maxValue: 15,
-    minValue: 4,
+    value: 15,
+    maxValue: 30,
+    minValue: 0,
     category: "seat-conversion",
     beneficiary: "winner",
+    isElectoralSystemBias: true, // Special flag: controls SMD winner bonus, not seat transfer
     references: [
       { title: "The 'hacking' of a mixed electoral system", url: "https://link.springer.com/article/10.1007/s11127-025-01296-z", source: "Springer - Public Choice (2025)" },
       { title: "Electoral system of Hungary - Historical", url: "https://en.wikipedia.org/wiki/Electoral_system_of_Hungary", source: "Wikipedia" },
@@ -1702,17 +1704,24 @@ export function ParliamentVisualization() {
   // - 106 SMD seats: Winner-take-all, small parties get ~0 (can't win plurality)
   // - 93 list seats: D'Hondt proportional distribution among parties above 5%
   // - Fidesz has ~1% SMD overperformance vs list votes
+  // - Electoral system bias (since 1989) controls the winner-take-all effect in SMD
   const proportionalSeats = useMemo((): PartySeats => {
     const qualifyingSmallParty = smallPartyPassesThreshold ? effectiveVotes.smallParty : 0
     const majorPartyTotal = effectiveVotes.tisza + effectiveVotes.fidesz
 
     if (majorPartyTotal === 0) return { tisza: 0, fidesz: 0, smallParty: 0 }
 
+    // Get the electoral system bias (1989) factor - controls SMD winner bonus
+    const electoralWeightingFactor = seatFactors.find(f => f.isElectoralSystemBias)
+    const electoralSystemBias = electoralWeightingFactor?.enabled
+      ? electoralWeightingFactor.value / 100 // Convert 0-30 to 0.00-0.30
+      : 0
+
     // === SMD SEATS (106) ===
     // Small parties get 0 SMD seats (they can't win plurality in any district)
     // Major parties split SMD seats based on relative strength
-    // Historical pattern: ~84/106 rural go to leading party, ~16-18/106 urban more competitive
-    // Fidesz has ~1% structural advantage in SMD vs list performance
+    // When electoral bias = 0, seats are roughly proportional between major parties
+    // When electoral bias > 0, winner gets bonus seats (winner-take-all effect)
 
     const tiszaShare = effectiveVotes.tisza / majorPartyTotal
     const fideszShare = effectiveVotes.fidesz / majorPartyTotal
@@ -1722,18 +1731,18 @@ export function ParliamentVisualization() {
     const adjustedFideszSmdShare = Math.min(1, fideszShare + smdFideszBonus)
     const adjustedTiszaSmdShare = 1 - adjustedFideszSmdShare
 
-    // SMD seats are winner-take-all with non-linear scaling
-    // When parties are close, seats split more evenly; when one dominates, they take most
-    // Using sigmoid-like curve to model this
-    const smdDominanceFactor = Math.abs(adjustedFideszSmdShare - adjustedTiszaSmdShare) * 2
-    const smdWinnerBonus = Math.min(0.3, smdDominanceFactor * 0.5) // Up to 30% bonus for dominance
+    // Electoral system bias: winner-take-all effect from mixed system
+    // This is the structural advantage for whoever leads (since 1989)
+    // Scales with the margin between parties and the bias level
+    const margin = Math.abs(adjustedFideszSmdShare - adjustedTiszaSmdShare)
+    const winnerBonus = margin * electoralSystemBias * 2 // Scales with margin and bias level
 
     let smdTisza: number, smdFidesz: number
     if (adjustedTiszaSmdShare > adjustedFideszSmdShare) {
-      smdTisza = Math.round(SMD_SEATS * (adjustedTiszaSmdShare + smdWinnerBonus))
+      smdTisza = Math.round(SMD_SEATS * (adjustedTiszaSmdShare + winnerBonus))
       smdFidesz = SMD_SEATS - smdTisza
     } else {
-      smdFidesz = Math.round(SMD_SEATS * (adjustedFideszSmdShare + smdWinnerBonus))
+      smdFidesz = Math.round(SMD_SEATS * (adjustedFideszSmdShare + winnerBonus))
       smdTisza = SMD_SEATS - smdFidesz
     }
 
@@ -1777,13 +1786,15 @@ export function ParliamentVisualization() {
       fidesz: smdFidesz + listSeats.fidesz,
       smallParty: listSeats.smallParty, // Small parties only get list seats
     }
-  }, [effectiveVotes, smallPartyPassesThreshold])
+  }, [effectiveVotes, smallPartyPassesThreshold, seatFactors])
 
   const finalSeats = useMemo((): PartySeats => {
     let fideszBias = 0
     let winnerBias = 0
 
-    seatFactors.filter(f => f.enabled).forEach(f => {
+    // Electoral system bias is handled in proportionalSeats (SMD winner bonus)
+    // Only count other seat transfer factors here
+    seatFactors.filter(f => f.enabled && !f.isElectoralSystemBias).forEach(f => {
       if (f.beneficiary === "fidesz") fideszBias += f.value
       else winnerBias += f.value
     })

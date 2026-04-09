@@ -63,15 +63,17 @@ export function dHondtAllocate(
 /**
  * Calculate SMD (Single-Member District) seats
  *
- * SMD seats are winner-take-all with non-linear scaling:
- * - When parties are close, seats split more evenly
- * - When one dominates, they take most seats
+ * Base calculation is roughly proportional between major parties.
+ * The winner-take-all effect is applied separately via the "electoral system weighting" bias.
  * - Fidesz has ~1% structural advantage in SMD vs list performance
  * - Small parties get 0 SMD seats (can't win plurality in any district)
+ *
+ * @param electoralSystemBias - Winner bonus from mixed electoral system (0 = proportional, 0.15 = typical effect)
  */
 export function calculateSmdSeats(
   votes: VoteShare,
-  fideszSmdBonus: number = 0.01
+  fideszSmdBonus: number = 0.01,
+  electoralSystemBias: number = 0
 ): { tisza: number; fidesz: number } {
   const majorPartyTotal = votes.tisza + votes.fidesz
 
@@ -86,17 +88,17 @@ export function calculateSmdSeats(
   const adjustedFideszSmdShare = Math.min(1, fideszShare + fideszSmdBonus)
   const adjustedTiszaSmdShare = 1 - adjustedFideszSmdShare
 
-  // SMD seats are winner-take-all with non-linear scaling
-  // Using sigmoid-like curve to model dominance effect
-  const smdDominanceFactor = Math.abs(adjustedFideszSmdShare - adjustedTiszaSmdShare) * 2
-  const smdWinnerBonus = Math.min(0.3, smdDominanceFactor * 0.5) // Up to 30% bonus for dominance
+  // Electoral system bias: winner-take-all effect from mixed system
+  // This is the "since 1989" structural advantage for whoever leads
+  const margin = Math.abs(adjustedFideszSmdShare - adjustedTiszaSmdShare)
+  const winnerBonus = margin * electoralSystemBias * 2 // Scales with margin and bias level
 
   let smdTisza: number, smdFidesz: number
   if (adjustedTiszaSmdShare > adjustedFideszSmdShare) {
-    smdTisza = Math.round(SMD_SEATS * (adjustedTiszaSmdShare + smdWinnerBonus))
+    smdTisza = Math.round(SMD_SEATS * (adjustedTiszaSmdShare + winnerBonus))
     smdFidesz = SMD_SEATS - smdTisza
   } else {
-    smdFidesz = Math.round(SMD_SEATS * (adjustedFideszSmdShare + smdWinnerBonus))
+    smdFidesz = Math.round(SMD_SEATS * (adjustedFideszSmdShare + winnerBonus))
     smdTisza = SMD_SEATS - smdFidesz
   }
 
@@ -112,11 +114,13 @@ export function calculateSmdSeats(
  *
  * @param votes - Vote percentages for each party
  * @param fideszSmdBonus - Fidesz structural advantage in SMD (default 1%)
+ * @param electoralSystemBias - Winner bonus from mixed system (0 = proportional, 0.15 = typical)
  * @returns Seat distribution for each party
  */
 export function calculateProportionalSeats(
   votes: VoteShare,
-  fideszSmdBonus: number = 0.01
+  fideszSmdBonus: number = 0.01,
+  electoralSystemBias: number = 0
 ): PartySeats {
   const smallPartyPassesThreshold = votes.smallParty >= PARLIAMENTARY_THRESHOLD
   const qualifyingSmallParty = smallPartyPassesThreshold ? votes.smallParty : 0
@@ -127,7 +131,7 @@ export function calculateProportionalSeats(
   }
 
   // Calculate SMD seats (small parties get 0)
-  const smdSeats = calculateSmdSeats(votes, fideszSmdBonus)
+  const smdSeats = calculateSmdSeats(votes, fideszSmdBonus, electoralSystemBias)
 
   // Calculate list seats using D'Hondt
   const listSeats = dHondtAllocate(
@@ -191,15 +195,17 @@ export function calculateFinalSeats(
     fideszSmdBonus?: number
     fideszBias?: number
     winnerBias?: number
+    electoralSystemBias?: number
   } = {}
 ): PartySeats {
   const {
     fideszSmdBonus = 0.01,
     fideszBias = 0,
     winnerBias = 0,
+    electoralSystemBias = 0,
   } = options
 
-  const proportionalSeats = calculateProportionalSeats(votes, fideszSmdBonus)
+  const proportionalSeats = calculateProportionalSeats(votes, fideszSmdBonus, electoralSystemBias)
   const winner: 'tisza' | 'fidesz' = votes.tisza >= votes.fidesz ? 'tisza' : 'fidesz'
 
   return applyBiases(proportionalSeats, fideszBias, winnerBias, winner)
