@@ -56,28 +56,29 @@ describe('2022 Validation - New Model', () => {
 
   test('Scenario 3: ALL biases ON → Match 2022 reality', () => {
     // Electoral system bias + additional seat biases should get us to reality
-    // Electoral system: ~0.20 (for 2022 level)
-    const baseSeats = calculateProportionalSeats(votes2022, 0.01, 0.20)
+    // 2022 preset values: electoralWeighting=15 (0.15 bias)
+    const baseSeats = calculateProportionalSeats(votes2022, 0.01, 0.15)
 
     console.log('\n=== FULL BIAS (should match 2022) ===')
-    console.log(`Base with electoral bias: Fidesz=${baseSeats.fidesz}, Opp=${baseSeats.tisza}`)
+    console.log(`Base with electoral bias 0.15: Fidesz=${baseSeats.fidesz}, Opp=${baseSeats.tisza}`)
 
-    // Additional biases needed to reach 135/57
-    // gerrymandering: ~6, minority MP: ~1, winner comp: ~5, parliament size: ~3
-    const additionalFideszBias = 6 + 1
-    const additionalWinnerBias = 5 + 3
+    // 2022 preset seat biases:
+    // gerrymandering: 5, minority MP: 1 → fideszBias = 6
+    // winner comp: 2, parliament size: 1 → winnerBias = 3
+    const additionalFideszBias = 5 + 1  // gerrymandering + minority MP
+    const additionalWinnerBias = 2 + 1  // winner comp + parliament size
 
     const finalFidesz = Math.min(199, baseSeats.fidesz + additionalFideszBias + additionalWinnerBias)
     const finalOpp = Math.max(0, baseSeats.tisza - additionalFideszBias - additionalWinnerBias)
 
-    console.log(`With seat biases: Fidesz=${finalFidesz}, Opp=${finalOpp}`)
+    console.log(`With seat biases (+${additionalFideszBias + additionalWinnerBias}): Fidesz=${finalFidesz}, Opp=${finalOpp}`)
     console.log(`Actual 2022: Fidesz=${actual2022.fidesz}, Opp=${actual2022.opposition}`)
 
     const error = Math.abs(finalFidesz - actual2022.fidesz) + Math.abs(finalOpp - actual2022.opposition)
     console.log(`Error: ${error} seats`)
 
-    // Should be within 10 seats of reality
-    expect(error).toBeLessThanOrEqual(15)
+    // Should be within 5 seats of reality with correct bias values
+    expect(error).toBeLessThanOrEqual(5)
   })
 
   test('Find optimal electoral system bias value', () => {
