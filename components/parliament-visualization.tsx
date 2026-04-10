@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
@@ -135,7 +136,7 @@ const translations = {
       },
       electoralWeighting: {
         name: "Választási rendszer súlyozása (1989 óta)",
-        description: "A magyar vegyes rendszer ALAP győztes-torzítása – ez nem Fidesz-találmány, 1989 óta létezik. A többségi elem természeténél fogva a győztest segíti. A 2011-es méretcsökkentés hatása ezen FELÜL jelentkezik."
+        description: "A magyar vegyes rendszer ALAP győztes-torzítása – ez nem Fidesz-találmány, 1989 óta létezik. A többségi elem természeténél fogva a győztest segíti. Ez egy százalékos érték, amely a pártok közötti különbséggel arányosan hat: nagyobb előny → nagyobb mandátumbónusz. Szoros versenynél a hatás kisebb."
       }
     },
     legal: {
@@ -272,7 +273,7 @@ A böngésző beállításaiban letilthatod a cookie-kat, de ez befolyásolhatja
       },
       electoralWeighting: {
         name: "Electoral system weighting (since 1989)",
-        description: "The Hungarian mixed system's BASELINE winner-bias – not a Fidesz invention, exists since 1989. The majoritarian element naturally favors the winner. The 2011 size reduction effect applies ON TOP of this."
+        description: "The Hungarian mixed system's BASELINE winner-bias – not a Fidesz invention, exists since 1989. The majoritarian element naturally favors the winner. This is a percentage that scales with margin: larger lead → larger seat bonus. In close races, the effect is smaller."
       }
     },
     legal: {
@@ -375,7 +376,7 @@ const opinionFormingFactors: Factor[] = [
     id: "propaganda",
     nameKey: "propaganda",
     enabled: true,
-    value: 5,
+    value: 3, // 2026 default (reduced from 5 in 2022)
     maxValue: 12,
     minValue: 2,
     category: "opinion-forming",
@@ -403,7 +404,7 @@ const opinionFormingFactors: Factor[] = [
     id: "vote-buying",
     nameKey: "voteBuying",
     enabled: true,
-    value: 3,
+    value: 2, // 2026 default (reduced from 3 in 2022)
     maxValue: 8,
     minValue: 1,
     category: "opinion-forming",
@@ -459,9 +460,9 @@ const seatConversionFactors: Factor[] = [
     id: "gerrymandering",
     nameKey: "gerrymandering",
     enabled: true,
-    value: 5,
+    value: 4, // District boundaries favor Fidesz (~4 seats)
     maxValue: 12,
-    minValue: 2,
+    minValue: 0,
     category: "seat-conversion",
     beneficiary: "fidesz",
     references: [
@@ -483,9 +484,9 @@ const seatConversionFactors: Factor[] = [
     id: "two-round",
     nameKey: "twoRound",
     enabled: true,
-    value: 8,
+    value: 2, // Abolition of two-round voting (~2 seats)
     maxValue: 15,
-    minValue: 3,
+    minValue: 0,
     category: "seat-conversion",
     beneficiary: "fidesz",
     references: [
@@ -523,7 +524,7 @@ const seatConversionFactors: Factor[] = [
     id: "winner-compensation",
     nameKey: "winnerCompensation",
     enabled: true,
-    value: 2,
+    value: 3, // Winner gets leftover votes (~3 seats)
     maxValue: 10,
     minValue: 2,
     category: "seat-conversion",
@@ -545,7 +546,7 @@ const seatConversionFactors: Factor[] = [
     id: "parliament-size",
     nameKey: "parliamentSize",
     enabled: true,
-    value: 1,
+    value: 2, // Smaller parliament amplifies winner effects (~2 seats)
     maxValue: 6,
     minValue: 1,
     category: "seat-conversion",
@@ -560,7 +561,7 @@ const seatConversionFactors: Factor[] = [
     id: "electoral-weighting",
     nameKey: "electoralWeighting",
     enabled: true,
-    value: 15,
+    value: 10, // SMD winner bonus from mixed system (since 1989)
     maxValue: 30,
     minValue: 0,
     category: "seat-conversion",
@@ -1017,7 +1018,8 @@ function BiasControls({
         const beneficiaryColor = actualBeneficiary === "tisza" ? PARTY_COLORS.tisza : PARTY_COLORS.fidesz
         const beneficiaryName = actualBeneficiary === "tisza" ? "Tisza" : "Fidesz"
         // Opinion-forming and vote-gathering biases affect vote percentages, seat-conversion affects seats
-        const unit = factor.category === "seat-conversion" ? ` ${t.seats}` : "%"
+        // Electoral system bias is percentage-based (scales with margin)
+        const unit = factor.isElectoralSystemBias ? "%" : (factor.category === "seat-conversion" ? ` ${t.seats}` : "%")
         const displayValue = isBidirectional ? Math.abs(factor.value) : factor.value
 
         return (
@@ -1393,7 +1395,8 @@ function TourPanel({
         : (isWinnerFactor ? winner : "fidesz")
       const beneficiaryColor = actualBeneficiary === "tisza" ? PARTY_COLORS.tisza : PARTY_COLORS.fidesz
       const beneficiaryName = actualBeneficiary === "tisza" ? "Tisza" : "Fidesz"
-      const unit = currentFactor.category === "seat-conversion" ? ` ${t.seats}` : "%"
+      // Electoral system bias is percentage-based (scales with margin)
+      const unit = currentFactor.isElectoralSystemBias ? "%" : (currentFactor.category === "seat-conversion" ? ` ${t.seats}` : "%")
       const displayValue = isBidirectional ? Math.abs(currentFactor.value) : currentFactor.value
 
       const handleToggle = isOpinionFactor
@@ -1602,7 +1605,13 @@ function TourPanel({
 
 // Main component
 export function ParliamentVisualization() {
-  const [lang, setLang] = useState<Language>("hu")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // Initialize language from URL query parameter, default to "hu"
+  const initialLang = (searchParams.get("lang") === "en" ? "en" : "hu") as Language
+  const [lang, setLang] = useState<Language>(initialLang)
+
   const [opinionFactors, setOpinionFactors] = useState<Factor[]>(opinionFormingFactors)
   const [voteFactors, setVoteFactors] = useState<Factor[]>(voteGatheringFactors)
   const [seatFactors, setSeatFactors] = useState<Factor[]>(seatConversionFactors)
@@ -1616,6 +1625,19 @@ export function ParliamentVisualization() {
   const totalTourPages = 4 + opinionFactors.length + voteFactors.length + seatFactors.length
 
   const t = translations[lang]
+
+  // Update URL when language changes
+  const handleLanguageChange = useCallback((newLang: Language) => {
+    setLang(newLang)
+    const params = new URLSearchParams(searchParams.toString())
+    if (newLang === "hu") {
+      params.delete("lang") // Default language, no need to show in URL
+    } else {
+      params.set("lang", newLang)
+    }
+    const queryString = params.toString()
+    router.replace(queryString ? `?${queryString}` : window.location.pathname, { scroll: false })
+  }, [searchParams, router])
 
   // Calculate combined bias using diminishing returns formula
   // Opinion biases affect overlapping voter populations, so they shouldn't be simply additive
@@ -1663,7 +1685,6 @@ export function ParliamentVisualization() {
   // Fair votes for display: this is what preference would be without ANY opinion bias
   // (same as fairBaseVotes, kept for compatibility with existing UI)
   const fairVotes = fairBaseVotes
-
   // Calculate EFFECTIVE votes for seat calculation
   // Uses displayedVotes (poll values with enabled opinion biases)
   // Plus foreign votes when enabled (these are NOT included in polls)
@@ -1912,13 +1933,16 @@ export function ParliamentVisualization() {
             <Landmark className="w-5 h-5" style={{ transform: 'rotate(-12deg)' }} />
             <span className="text-xs font-semibold uppercase tracking-widest">{t.headerLabel}</span>
           </div>
-          <button
-            onClick={() => setLang(lang === "hu" ? "en" : "hu")}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Globe className="w-4 h-4" />
-            {lang === "hu" ? "English" : "Magyar"}
-          </button>
+          <div className="flex items-center gap-4">
+            {/* Language switcher */}
+            <button
+              onClick={() => handleLanguageChange(lang === "hu" ? "en" : "hu")}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Globe className="w-4 h-4" />
+              {lang === "hu" ? "English" : "Magyar"}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -2042,9 +2066,8 @@ export function ParliamentVisualization() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.25 }}
               >
-                <h2 className="text-lg font-semibold mb-6">
-                {t.measuredPreferenceTitle}
-              </h2>
+                <h2 className="text-lg font-semibold mb-4">{t.tour.pollsTitle}</h2>
+              <p className="text-sm text-muted-foreground mb-6">{t.tour.pollsText}</p>
               <PollSliders
                 displayedVotes={displayedVotes}
                 fairVotes={fairVotes}
