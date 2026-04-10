@@ -120,7 +120,7 @@ const translations = {
       },
       twoRound: {
         name: "Kétfordulós szavazás eltörlése",
-        description: "2011-ben egykörös FPTP-rendszerre váltottak. 2014-ben a Fidesz 44%-os listás eredménnyel 91/106 egyéni körzetet nyert (86%). A töredezett ellenzék 35-40%-os Fidesz-győzelmeket eredményezett sok körzetben. Ez megakadályozza az ellenzék taktikai összefogását."
+        description: "2011-ben egyfordulós relatív többségi rendszerre váltottak. 2014-ben a Fidesz 44%-os listás eredménnyel 91/106 egyéni körzetet nyert (86%). A töredezett ellenzék 35-40%-os Fidesz-győzelmeket eredményezett sok körzetben. Ez megakadályozza az ellenzék taktikai összefogását."
       },
       minorityMp: {
         name: "Kisebbségi képviselő",
